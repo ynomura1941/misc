@@ -3,10 +3,10 @@ mb_internal_encoding('UTF-8');
 mb_http_output('UTF-8');
 
 setcookie("hoge","test!!!");
-$flash_url   = $_GET['furl'];
-$landing_url = $_GET['lurl'];
-$width       = $_GET['w'];
-$height      = $_GET['h'];
+$flash_url   = $_GET['furl'] ?: '';
+$landing_url = $_GET['lurl'] ?: '';
+$width       = $_GET['w']    ?: '';
+$height      = $_GET['h']    ?: '';
 
 $chk = true;
 if( preg_match('/\A(http|https):\/\//iu',$flash_url) !== 1 || preg_match('/\A(http|https):\/\//iu',$landing_url) !== 1){
@@ -40,5 +40,5 @@ function he($str){
   </body>
 </html>
 <?php else: ?>
-avav
+表示できません。
 <?php endif; ?>
