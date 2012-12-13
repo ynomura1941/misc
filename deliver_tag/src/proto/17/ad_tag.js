@@ -61,12 +61,10 @@
             this.util.insertAfter(this.util.myTag(this.util.win.document), unit_div);
           }
           for (var group_id in this.data) {
-            console.log(group_id);
             var temp_group_info = this.data[group_id];
             if ( typeof(temp_group_info['loaded']) !== 'undefined' && temp_group_info['loaded'] === true ){
               for ( var ad_counter = 0; ad_counter < temp_group_info['json']['num']; ad_counter++ ){
                 var temp_ad = temp_group_info['json']['ads'][ad_counter];
-                console.log(temp_ad,unit_id);
                 if( temp_ad['unit_id'] == unit_id){
                   target_ad = temp_ad;
                   temp_ad = null;
@@ -92,7 +90,7 @@
             }
           }
           else{
-            console.log('prepared rendering!:', target_ad);
+            //console.log('prepared rendering!:', target_ad);
           }
         }
     };
