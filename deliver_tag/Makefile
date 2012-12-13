@@ -9,4 +9,4 @@ install:
 setup: install
   
 clean:
-	rm -Rf juicer_deps vendor/* .bundle Gemfile.lock
+	rm -Rf juicer_deps vendor/* .bundle Gemfile.lock bin
