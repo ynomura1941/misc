@@ -1,5 +1,5 @@
-/*jslint white: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: true */
-"use strict";
+/*jslint windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
+/*global window */
 (function(_window){
   if (typeof (_window.adingoFluctCommon) == 'undefined') {
     
@@ -11,7 +11,7 @@
     
     AdingoFluctCommon.prototype = {
         beacon: function(url){
-          var beacon = doc.createElement('img');
+          var beacon = this.doc.createElement('img');
           beacon.setAttribute('src', url);
           beacon.setAttribute('style', 'display:none;position:absolute;border:none;padding:0;margin:0;');
           beacon.setAttribute('width', 0);
@@ -31,9 +31,9 @@
         parse_param: function(e){
           var params = {};
           
-          params.tag = this.myTag(e);
+          params['tag'] = this.myTag(e);
           
-          var selfUrl = params.tag.src;
+          var selfUrl = params['tag'].src;
           if( selfUrl.indexOf('?') < 0 ){
             return params;
           }
@@ -45,7 +45,7 @@
             var param = paramStr[i].split('=');
             params[param[0]] = param[1];
           }
-          params.requestQuery = queryStr;
+          params['requestQuery'] = queryStr;
           return params;
         },
         myTag: function(e){

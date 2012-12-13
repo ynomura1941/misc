@@ -12,8 +12,10 @@ setup: install
 clean:
 	rm -Rf juicer_deps vendor/* .bundle Gemfile.lock bin
 
-force_compress_compile:
+advanced_force_compress_compile:
 	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler --arguments "--compilation_level ADVANCED_OPTIMIZATIONS" $(SRC)
+force_compress_compile:
+	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler $(SRC)
 
 merge:
 	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m "" -o $(SRC).mrg.js $(SRC)

@@ -1,10 +1,10 @@
-/*jslint browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: true */
+/*jslint windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 /*global window escape */
-"use strict";
+
 (function (win) {
     if (typeof (win.adingoFluctSync) === 'undefined') {
         var AdingoFluctSync = function () {};
-        AdingoFluctSync.logly = function (util, logyid) {
+        AdingoFluctSync['logly'] = function (util, logyid) {
             var ref = '', url = util.doc.referrer;
             try {
                 ref = util.win.parent.document.referrer;
@@ -19,15 +19,25 @@
             return util.beacon(src);
         };
         
-        AdingoFluctSync.scaleout = function (util) {
+        AdingoFluctSync['scaleout'] = function (util) {
             var so_tp = encodeURIComponent(util.doc.location.href), so_pp = encodeURIComponent(util.doc.referrer), so_src = 'http://bid.socdm.com/rtb/sync?proto=adingo&sspid=adingo' + '&tp=' + so_tp + '&pp=' + so_pp + "&t=.gif";
             return util.beacon(so_src);
         };
-        AdingoFluctSync.fout = function (util) {
+        AdingoFluctSync['fout'] = function (util) {
             return util.beacon('http://sync.fout.jp/sync?xid=fluct');
         };
       
-        win.adingoFluctSync = AdingoFluctSync;
+        AdingoFluctSync.render = function(util, target, syncs){
+          for(var sync in syncs){
+            if ( sync === 'logly') {
+              util.insertAfter(target, AdingoFluctSync[sync](util, syncs[sync]));
+            }
+            else{
+              util.insertAfter(target, AdingoFluctSync[sync](util));
+            }
+          }
+        };
+        win["adingoFluctSync"] = AdingoFluctSync;
     }
     win = null;
 }(window));
