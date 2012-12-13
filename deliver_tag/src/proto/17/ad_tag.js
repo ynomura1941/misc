@@ -1,3 +1,5 @@
+/*jslint white: true, onevar: true, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: true */
+"use strict";
 /**
  * @depends ../../common.js
  * @depends ../../sync.js

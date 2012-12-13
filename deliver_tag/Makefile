@@ -18,3 +18,6 @@ force_compress_compile:
 merge:
 	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m "" -o $(SRC).mrg.js $(SRC)
 
+verify:
+	env JUICER_HOME=juicer_deps ./bin/juicer verify $(SRC)
+

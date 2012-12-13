@@ -1,3 +1,5 @@
+/*jslint white: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: true */
+"use strict";
 (function(_window){
   if (typeof (_window.adingoFluctCommon) == 'undefined') {
     
@@ -59,6 +61,8 @@
   }
   _window=null;
 })(window);
+/*jslint white: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: true */
+"use strict";
 (function(_window){
   if (typeof (_window.adingoFluctSync) == 'undefined') {
     
@@ -90,6 +94,8 @@
   }
   _window = null;
 })(window);
+/*jslint white: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: true */
+"use strict";
 /**
  * @depends ../../common.js
  * @depends ../../sync.js
@@ -107,11 +113,7 @@
     AdingoFluct.prototype = {
         fetchAdData: function(el){
           var params = this.util.parse_param(el);
-          
           this.data[params.G] = params;
-          
-          console.dir(this);
-          
           var url = null;
           if( typeof(params.url) != 'undefined'){
             url = params.url;
