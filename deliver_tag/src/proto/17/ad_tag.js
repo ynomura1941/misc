@@ -4,12 +4,10 @@
  * @depends ../../common/1.js
  * @depends ../../cookie_sync/1.js
  */
-(function(_window){
-  if (typeof (_window['adingoFluct']) == 'undefined') {
-    
-    
-    var AdingoFluct = function(_adingoFluctCommon){
-      this.util = _adingoFluctCommon;
+(function(){
+  if (typeof (window['adingoFluct']) == 'undefined') {
+    var AdingoFluct = function(){
+      this.util = new AdingoFluctCommon();
       this.data = {};
       this.render_queue = [];
       this.rendered_units = [];
@@ -21,7 +19,6 @@
     AdingoFluct.LOAD_ERROR = 3;
     AdingoFluct.prototype = {
         setGroup: function(el){
-          
           var params = this.util.parse_param(el);
           this.data[params['G']] = params;
           this.data[params['G']]['load_status'] = AdingoFluct.LOAD_NONE;
@@ -36,7 +33,7 @@
             this.render_queue=[];
             if ( temp_queue.length > 0 ){
               var unit_id = temp_queue.shift();
-              adingoFluctSync.render(this.util, this.util.doc.getElementById('adingoFluctUnit_'+ unit_id), json['syncs']);
+              adingoFluctSync.render(this.util, this.util.byId('adingoFluctUnit_'+ unit_id), json['syncs']);
               this.showAd(unit_id);
               while( temp_queue.length > 0){
                 var rest = temp_queue.shift();
@@ -83,11 +80,11 @@
           if( this.rendered_units.indexOf(unit_id) !== -1 ){
             return;
           }
-          var unit_div = this.util.doc.getElementById('adingoFluctUnit_'+ unit_id);
+          var unit_div = this.util.byId('adingoFluctUnit_'+ unit_id);
           if( unit_div === null ){
             unit_div = this.util.create_element('div');
             unit_div.setAttribute('id', 'adingoFluctUnit_'+ unit_id);
-            this.util.insertAfter(this.util.myTag(this.util.win.document), unit_div);
+            this.util.insertAfter(this.util.myTag(window.document), unit_div);
           }
           for (var group_id in this.data) {
             var temp_group_info = this.data[group_id];
@@ -130,7 +127,8 @@
             this.util.flash_ad(unit_div_id, adinfo);
             break;
           case 'image':
-            this.util.image_ad(unit_div_id, adinfo);
+            this.util.overlay(adinfo);
+            this.util.image_ad('adingoFluctOverlay_' + adinfo['unit_id'], adinfo);
             break;
           default:
             
@@ -142,8 +140,7 @@
     AdingoFluct.prototype['showAd'] = AdingoFluct.prototype.showAd;
     AdingoFluct.prototype['callback'] = AdingoFluct.prototype.callback;
     AdingoFluct.prototype['setGroup'] = AdingoFluct.prototype.setGroup;
-    _window['adingoFluct'] = new AdingoFluct(adingoFluctCommon);
+    window['adingoFluct'] = new AdingoFluct();
   }
-  _window = null;
-})(window);
+})();
 window['adingoFluct'].setGroup(window.document);

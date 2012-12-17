@@ -1,11 +1,33 @@
 /*jslint windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 /*global window */
-(function(_window){
-  if (typeof (_window.adingoFluctCommon) == 'undefined') {
+(function(){
+  if (typeof (window['AdingoFluctCommon']) == 'undefined') {
+    if (!Array.prototype.indexOf)
+    {
+      Array.prototype.indexOf = function(elt /*, from*/)
+      {
+        var len = this.length;
+
+        var from = Number(arguments[1]) || 0;
+        from = (from < 0)
+             ? Math.ceil(from)
+             : Math.floor(from);
+        if (from < 0)
+          from += len;
+
+        for (; from < len; from++)
+        {
+          if (from in this &&
+              this[from] === elt)
+            return from;
+        }
+        return -1;
+      };
+    };
     
-    var AdingoFluctCommon = function(__w){
-      this.win = __w;
-      this.doc = __w.document;
+    var modedoc =  /BackCompat/i.test(window.document.compatMode) ? window.document.body : window.document.documentElement;
+    
+    var AdingoFluctCommon = function(){
       this.flashInfo = (function(){
         var rtn = {};
         rtn['v']=0, rtn['exist'] = false, rtn['done'] = false;
@@ -60,6 +82,122 @@
     };
     
     AdingoFluctCommon.prototype = {
+        
+        /**
+         * 
+         * @returns {___anonymous3390_3426}
+         */
+        wsize: function(){
+          var obj = new Object();
+          obj.h = this.wheight();
+          obj.w = this.wwidth();
+          return obj;
+        },
+        
+        /**
+         * 
+         * @returns
+         */
+        wheight: function(){
+          var func = null;
+          return (function(){
+            if( func == null ){
+              if( typeof(window.innerHeight) != 'undefined' ){
+                func = function(){return window.innerWidth;};
+              }
+              else{
+                func = function(){return modedoc.clientWidth;};
+              }
+            }
+            return func();
+          })();
+        },
+        
+        /**
+         * 
+         * @returns
+         */
+        wwidth: function(){
+          var func = null;
+          return (function(){
+            if( func == null ){
+              if( typeof(window.innerHeight) != 'undefined' ){
+                func = function(){return window.innerHeight;};
+              }
+              else{
+                func = function(){return modedoc.clientHeight;};
+              }
+            }
+            return func();
+          })();
+        },
+        
+        dsize: function(){
+          var obj = new Object();
+          obj.h = this.dheight();
+          obj.w = this.dwidth();
+          return obj;
+
+        },
+        
+        dheight: function(){
+          var func = null;
+          return (function(){
+            if( func == null ){
+              console.log(modedoc.clientHeight, modedoc.scrollHeight);
+              func = function(){return Math.max(modedoc.clientHeight, modedoc.scrollHeight);};
+            }
+            return func();
+          })();
+        },
+        
+        dwidth: function(){
+          var func = null;
+          return (function(){
+            if( func == null ){
+              console.log(modedoc.clientHeight, modedoc.scrollHeight);
+              func = function(){return Math.max(modedoc.clientHeight, modedoc.scrollHeight);};
+            }
+            return func();
+          })();
+        },
+        
+        scrollY: function(){
+          var func = null;
+          return (function(){
+            if( func == null ){
+              if( typeof(window.scrollY) !== 'undefined' ){
+                func = function(){return window.scrollY;};
+              }
+              else if( typeof(window.pageYOffset) !== 'undefined' ){
+                func = function(){return window.pageYOffset;};
+              }
+              else{
+                func = function(){return modedoc.scrollTop;};
+              }
+            }
+            return func();
+          })();
+        },
+        
+        scrollX: function(){
+          var func = null;
+          return (function(){
+            if( func == null ){
+              if( typeof(window.scrollX) !== 'undefined' ){
+                func = function(){return window.scrollX;};
+              }
+              else if( typeof(window.pageXOffset) !== 'undefined' ){
+                func = function(){return window.pageXOffset;};
+              }
+              else{
+                func = function(){return modedoc.scrollLeft;};
+              }
+            }
+            return func();
+          })();
+        },
+        
         /**
          * image 生成
          * cookie sync や imp beacon用のイメージタグを生成
@@ -67,7 +205,7 @@
          * @returns
          */
         beacon: function(url){
-          var beacon = this.doc.createElement('img');
+          var beacon = window.document.createElement('img');
           beacon.setAttribute('src', url);
           beacon.setAttribute('style', 'display:none;position:absolute;border:none;padding:0;margin:0;');
           beacon.setAttribute('width', 0);
@@ -81,7 +219,7 @@
          * @returns
          */
         create_element: function(tagName){
-          return this.doc.createElement(tagName);
+          return window.document.createElement(tagName);
         },
         
         /**
@@ -105,9 +243,21 @@
           return loader;
         },
         
+        /**
+         * 
+         * @param id
+         * @returns
+         */
         byId: function(id){
-          return this.doc.getElementById(id);
+          return window.document.getElementById(id);
         },
+        
+        /**
+         * 
+         * @param id
+         * @param ad
+         * @returns
+         */
         iframe: function(id, ad){
           var w = ad['w'] + 'px', h = ad['h'] + 'px';
           var temp = this.create_element('iframe');
@@ -124,6 +274,11 @@
           return temp;
         },
         
+        /**
+         * 
+         * @param e
+         * @returns {___anonymous5696_5697}
+         */
         parse_param: function(e){
           var params = {};
           
@@ -144,6 +299,12 @@
           params['requestQuery'] = queryStr;
           return params;
         },
+        
+        /**
+         * 
+         * @param e
+         * @returns
+         */
         myTag: function(e){
           if (e.nodeName.toLowerCase() == 'script')
             return e;
@@ -154,9 +315,15 @@
         }
         ,
         
+        /**
+         * 
+         * @param unit_id
+         * @param ad
+         * @returns {Boolean}
+         */
         unit_beacon: function(unit_id, ad){
           var div = this.byId(unit_id);
-          var beacon = this.beacon(ad.beacon);
+          var beacon = this.beacon(ad['beacon']);
           
           div.appendChild(beacon);
           div = null;
@@ -165,6 +332,13 @@
         }
         
         ,
+        
+        /**
+         * 
+         * @param id
+         * @param ad
+         * @returns {Boolean}
+         */
         html_ad: function(id,ad){
           var div = this.byId(id);
           var iframe = this.iframe('adingoFluctIframe_'+ ad['unit_id'], ad);
@@ -181,18 +355,26 @@
           return true;
         },
         
+        
+        /**
+         * 
+         * @param id
+         * @param ad
+         * @returns {Boolean}
+         */
         image_ad: function(id, ad){
           var div = this.byId(id);
           var temp = this.create_element('img');
           temp.setAttribute('src', ad['creative_url']);
           temp.setAttribute('width', ad['width']);
           temp.setAttribute('height', ad['height']);
-          if( ad.alt.length > 0){
+          temp.setAttribute('style', 'border:none;padding:0;margin:0;');
+          if( ad['alt'].length > 0){
             temp.setAttribute('alt', this.unicodeDecoder(ad['alt']));
           }
           var link  = this.create_element('a');
           link.setAttribute('href', ad['landing_url']);
-          link.setAttribute('target', '_blank');
+          link.setAttribute('target', this.openTarget(ad['open']));
           div.appendChild(link);
           link.appendChild(temp);
           div = null;
@@ -202,12 +384,17 @@
 
         },
         
+        /**
+         * 
+         * @param id
+         * @param ad
+         * @returns {Boolean}
+         */
         flash_ad: function(id, ad){
           var flashInfo = this.flashInfo();
-          console.log(flashInfo);
           if( flashInfo['exist'] && flashInfo['v'] > 5){
             var div = this.byId(id);
-            var flashVars = 'clickTAG=' + escape(ad['landing_url']) + '&targetTAG=' + '_blank';
+            var flashVars = 'clickTAG=' + escape(ad['landing_url']) + '&targetTAG=' + this.openTarget(ad['open']);
             var objStr = flashInfo['tag_template'].replace(/\{\$sWidth\}/g, ad['width']);
             objStr = objStr.replace(/\{\$sHeight\}/g, ad['height']);
             objStr = objStr.replace(/\{\$sSrc}/g, ad['creative_url']);
@@ -232,12 +419,13 @@
               temp.setAttribute('src', ad['alt_image']);
               temp.setAttribute('width', ad['width']);
               temp.setAttribute('height', ad['height']);
-              if( ad.alt.length > 0){
+              temp.setAttribute('style', 'border:none;padding:0;margin:0;');
+              if( ad['alt'].length > 0){
                 temp.setAttribute('alt', this.unicodeDecoder(ad['alt']));
               }
               var link  = this.create_element('a');
               link.setAttribute('href', ad['landing_url']);
-              link.setAttribute('target', '_blank');
+              link.setAttribute('target', this.openTarget(ad['open']));
               div.appendChild(link);
               link.appendChild(temp);
               div = null;
@@ -250,6 +438,12 @@
             }
           }
         },
+        
+        /**
+         * 
+         * @param str
+         * @returns {String}
+         */
         unicodeDecoder: function(str){
           arrs=str.match(/\\u.{4}/g);
           var t="";
@@ -260,35 +454,68 @@
               t+=String.fromCharCode(arrs[i].replace("\\u","0x"));
           }
           return(t);
+        },
+        
+        /**
+         * 
+         * @param flg
+         * @returns {String}
+         */
+        openTarget: function(flg){
+          switch(flg){
+          case 1:
+            return '_blank';
+          case 2:
+            return '_top';
+          default:
+            return '_top';
+          }
+        },
+        
+        /**
+         * 
+         * @param ad
+         * @returns
+         */
+        overlay: function(ad){
+          var div = this.byId('adingoFluctUnit_' + ad['unit_id']);
+          var over = this.create_element('div');
+          var h = ad['h'] + 'px';
+          var w = ad['w'] + 'px';
+          over.setAttribute('id', 'adingoFluctOverlay_' + ad['unit_id']);
+          over.setAttribute('style', 'width:'+ w + ';height:'+ h +';bottom:0px;left:0px;position:absolute;z-index:9993;display:none;font-size:18px;line-height:1.5em;visibility:visible;opacity:0;verticalAlign:middle;padding:0px;margin:0px;border:none;overflow: hidden;');
+          div.appendChild(over);
+          div = null;
+          return over;
         }
     };
-    _window['adingoFluctCommon'] = new AdingoFluctCommon(_window);
+    window['AdingoFluctCommon'] = AdingoFluctCommon;
   }
-  _window=null;
-})(window);
+})();
 /*jslint windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 /*global window escape */
 
-(function (win) {
-    if (typeof (win.adingoFluctSync) === 'undefined') {
+(function () {
+    if (typeof (window['adingoFluctSync']) === 'undefined') {
         var AdingoFluctSync = function () {};
+        
         AdingoFluctSync['logly'] = function (util, logyid) {
-            var ref = '', url = util.doc.referrer;
+            var ref = '', url = window.document.referrer;
             try {
-                ref = util.win.parent.document.referrer;
+                ref = window.parent.document.referrer;
             } catch (e1) { }
             try {
-                url = util.win.parent.document.URL;
+                url = window.parent.document.URL;
             } catch (e2) { }
             var _lgy_ssp_id = 1;
             var _lgy_ssp_audience_id = '$luid';
             var _lgy_query = 'sid=' + _lgy_ssp_id + '&aid=' + _lgy_ssp_audience_id + '&url=' + escape(url) + '&rurl=' + escape(ref);
-            var src = (('https:' === document.location.protocol) ? 'https://' : 'http://') + 'dsp.logly.co.jp/sg.gif?' + _lgy_query;
+            var src = (('https:' === window.document.location.protocol) ? 'https://' : 'http://') + 'dsp.logly.co.jp/sg.gif?' + _lgy_query;
             return util.beacon(src);
         };
         
         AdingoFluctSync['scaleout'] = function (util) {
-            var so_tp = encodeURIComponent(util.doc.location.href), so_pp = encodeURIComponent(util.doc.referrer), so_src = 'http://bid.socdm.com/rtb/sync?proto=adingo&sspid=adingo' + '&tp=' + so_tp + '&pp=' + so_pp + "&t=.gif";
+            var so_tp = encodeURIComponent(window.document.location.href), so_pp = encodeURIComponent(window.document.referrer), so_src = 'http://bid.socdm.com/rtb/sync?proto=adingo&sspid=adingo' + '&tp=' + so_tp + '&pp=' + so_pp + "&t=.gif";
             return util.beacon(so_src);
         };
         AdingoFluctSync['fout'] = function (util) {
@@ -305,22 +532,19 @@
             }
           }
         };
-        win["adingoFluctSync"] = AdingoFluctSync;
+        window["adingoFluctSync"] = AdingoFluctSync;
     }
-    win = null;
-}(window));
+})();
 /*jslint windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 /*global window */
 /**
  * @depends ../../common/1.js
  * @depends ../../cookie_sync/1.js
  */
-(function(_window){
-  if (typeof (_window.adingoFluct) == 'undefined') {
-    
-    
-    var AdingoFluct = function(_adingoFluctCommon){
-      this.util = _adingoFluctCommon;
+(function(){
+  if (typeof (window['adingoFluct']) == 'undefined') {
+    var AdingoFluct = function(){
+      this.util = new AdingoFluctCommon();
       this.data = {};
       this.render_queue = [];
       this.rendered_units = [];
@@ -346,7 +570,7 @@
             this.render_queue=[];
             if ( temp_queue.length > 0 ){
               var unit_id = temp_queue.shift();
-              adingoFluctSync.render(this.util, this.util.doc.getElementById('adingoFluctUnit_'+ unit_id), json['syncs']);
+              adingoFluctSync.render(this.util, this.util.byId('adingoFluctUnit_'+ unit_id), json['syncs']);
               this.showAd(unit_id);
               while( temp_queue.length > 0){
                 var rest = temp_queue.shift();
@@ -390,15 +614,14 @@
         
         showAd: function(unit_id) {
           var target_ad = null;
-          
           if( this.rendered_units.indexOf(unit_id) !== -1 ){
             return;
           }
-          var unit_div = this.util.doc.getElementById('adingoFluctUnit_'+ unit_id);
+          var unit_div = this.util.byId('adingoFluctUnit_'+ unit_id);
           if( unit_div === null ){
             unit_div = this.util.create_element('div');
             unit_div.setAttribute('id', 'adingoFluctUnit_'+ unit_id);
-            this.util.insertAfter(this.util.myTag(this.util.win.document), unit_div);
+            this.util.insertAfter(this.util.myTag(window.document), unit_div);
           }
           for (var group_id in this.data) {
             var temp_group_info = this.data[group_id];
@@ -432,9 +655,7 @@
           
           var gid = adData.shift();
           var adinfo = adData.shift();
-          console.log(gid,adinfo);
           var unit_div_id = 'adingoFluctUnit_'+ adinfo['unit_id'];
-          
           switch(adinfo['creative_type']){
           case 'html':
             this.util.html_ad(unit_div_id, adinfo);
@@ -443,7 +664,8 @@
             this.util.flash_ad(unit_div_id, adinfo);
             break;
           case 'image':
-            this.util.image_ad(unit_div_id, adinfo);
+            this.util.overlay(adinfo);
+            this.util.image_ad('adingoFluctOverlay_' + adinfo['unit_id'], adinfo);
             break;
           default:
             
@@ -454,8 +676,9 @@
     
     AdingoFluct.prototype['showAd'] = AdingoFluct.prototype.showAd;
     AdingoFluct.prototype['callback'] = AdingoFluct.prototype.callback;
-    _window['adingoFluct'] = new AdingoFluct(adingoFluctCommon);
+    AdingoFluct.prototype['setGroup'] = AdingoFluct.prototype.setGroup;
+    window['adingoFluct'] = new AdingoFluct();
   }
-  _window['adingoFluct'].setGroup(_window.document);
-  _window = null;
-})(window);
+})();
+window['adingoFluct'].setGroup(window.document);
+
