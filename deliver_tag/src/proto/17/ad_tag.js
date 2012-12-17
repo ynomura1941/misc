@@ -11,6 +11,13 @@
       this.data = {};
       this.render_queue = [];
       this.rendered_units = [];
+      this.effectWatcher = null;
+      this.effectExecute = false;
+      this.moveWatcher = null;
+      this.moveExecute = false;
+      this.overlayUnits = {};
+      this.reloadWatcher  = null;
+      this.synced = false;
     };
     AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
     AdingoFluct.LOAD_NONE = 0;
@@ -18,11 +25,46 @@
     AdingoFluct.LOADED = 2;
     AdingoFluct.LOAD_ERROR = 3;
     AdingoFluct.prototype = {
+        /**
+         * 
+         */
+        destroy: function(){
+          this.util = null;
+          this.data = null;
+          this.render_queue = null;
+          this.rendered_units = null;
+          if( this.effectWatcher != null ){
+            clearTimeout(this.effectWatcher);
+            this.effectWatcher = null;
+            this.effectExecute = false;
+          }
+          if( this.moveWatcher != null ){
+            clearTimeout(this.moveWatcher);
+            this.moveWatcher = null;
+            this.moveExecute = false;
+          }
+          this.overlayUnits = null;
+          if( this.reloadWatcher != null ){
+            clearTimeout(this.reloadWatcher);
+            this.reloadWatcher     = null;
+          }
+          this.synced = false;
+        },
+        
+        /**
+         * 
+         * @param el
+         */
         setGroup: function(el){
           var params = this.util.parse_param(el);
           this.data[params['G']] = params;
           this.data[params['G']]['load_status'] = AdingoFluct.LOAD_NONE;
         },
+        
+        /**
+         * 
+         * @param json
+         */
         callback: function(json){
           if( json['status'] == 'success'){
             this.util.deleteById('fluctAdLoader_' + json['G']);
@@ -32,9 +74,12 @@
             var temp_queue = this.render_queue.slice(0);
             this.render_queue=[];
             if ( temp_queue.length > 0 ){
-              var unit_id = temp_queue.shift();
-              adingoFluctSync.render(this.util, this.util.byId('adingoFluctUnit_'+ unit_id), json['syncs']);
-              this.showAd(unit_id);
+              if ( this.synced === false ){
+                var unit_id = temp_queue.shift();
+                adingoFluctSync.render(this.util, this.util.byId('adingoFluctUnit_'+ unit_id), json['syncs']);
+                this.showAd(unit_id);
+                this.synced = true;
+              }
               while( temp_queue.length > 0){
                 var rest = temp_queue.shift();
                 if(rest != null){
@@ -57,6 +102,27 @@
           if( gcount === loadedcount ){
             this.rendered_units = [];
           }
+        },
+        
+        reloadInvoke: function(gid, unit_id){
+          this.reloadWatcher = setTimeout(function(){ window['adingoFluct'].reload(gid, unit_id); }, 5000);
+        },
+        
+        reload: function(gid, unit_id){
+          if( this.reloadWatcher != null ){
+            clearTimeout(this.reloadWatcher);
+            this.reloadWatcher = null;
+          }
+          
+          var g_data = this.data[gid];
+          g_data['load_status'] = AdingoFluct.NONE;
+          console.log('reload', gid);
+          this.render_queue.push(unit_id);
+          var unit_div = this.util.byId('adingoFluctUnit_'+ unit_id);
+          while(unit_div.firstChild){
+            unit_div.removeChild(unit_div.firstChild);
+          }
+          this.load(gid);
         },
         
         load: function(gid){
@@ -104,6 +170,7 @@
               }
               
               if( temp_group_info['load_status'] === AdingoFluct.LOAD_NONE ){
+                console.log('avava');
                 this.load(group_id);
               }
             }
@@ -129,11 +196,87 @@
           case 'image':
             this.util.overlay(adinfo);
             this.util.image_ad('adingoFluctOverlay_' + adinfo['unit_id'], adinfo);
+            this.moveWatcher = setTimeout(function(){ window['adingoFluct'].move('adingoFluctOverlay_' + adinfo['unit_id']);}, 100);
+            this.visibleOverlay('adingoFluctOverlay_' + adinfo['unit_id']);
+            this.reloadInvoke(gid, adinfo['unit_id']);
             break;
           default:
             
           }
           this.util.unit_beacon(unit_div_id, adinfo);
+        },
+        
+        visibleOverlay: function(id){
+          this.effectExecute = false;
+          var target = this.util.byId(id);
+          target.style.display = 'block';
+          var lpos = this.util.lposXY(parseInt(target.style.width), parseInt(target.style.height));
+          var x =  Math.max(0, lpos['x']) + 'px';
+          var y = lpos['y'] + 'px';
+          if( this.util.offsetY() + this.util.wheight() >= this.util.dheight() ){
+            y = lpos['top'] + 'px';
+          }
+          target.style.opacity = 0;
+          target.style.filter = "alpha(opacity=" + 0 + ")";
+          target.style.top = y;
+          target.style.left = x;
+          target = null;
+          this.overlayUnits[id] = {};
+          this.overlayUnits[id]['winPosX'] = this.util.offsetX();
+          this.overlayUnits[id]['winPosY'] = this.util.offsetY();
+          
+          this.effectWatcher = setTimeout(function(){window['adingoFluct'].show(id, 0);}, 500);
+        },
+        
+        show: function(id, effectValue){
+          clearTimeout(this.effectWatcher);
+          this.effectWatcher = null;
+          
+          var target = this.util.byId(id);
+          
+          effectValue = effectValue + 0.09;
+          
+          target.style.opacity = effectValue;
+          target.style.filter = "alpha(opacity=" + 100 * effectValue + ")";
+          if( target.style.opacity <= 1){
+            target = null;
+            this.effectWatcher = setTimeout(function(){window['adingoFluct'].show(id, effectValue);}, 24);
+          }
+          else{
+            target = null;
+            
+          }
+        },
+        
+        
+        move: function(id){
+          clearTimeout(this.moveWatcher);
+          this.moveWatcher = null;
+          isMove = false;
+          
+          var winPosX = this.overlayUnits[id]['winPosX'];
+          var winPosY = this.overlayUnits[id]['winPosY'];
+          if( winPosX != this.util.offsetX()
+              || winPosY != this.util.offsetY() ){
+            isMove = true;
+          }
+          if( isMove ){
+            this.overlayUnits[id]['winPosX'] = winPosX;
+            this.overlayUnits[id]['winPosY'] = winPosY;
+            
+            if( this.effectWatcher != null ){
+              if(this.effectExecute === false){
+                clearTimeout(this.effectWatcher);
+                this.effectWatcher = null;
+              }else{
+                this.moveWatcher = setTimeout(function(){window['adingoFluct'].move(id);}, 100);
+                return;
+              }
+            }
+            this.effectExecute = true;
+            this.visibleOverlay(id);
+          }
+          this.moveWatcher = setTimeout(function(){window['adingoFluct'].move(id);}, 100);
         }
     };
     
