@@ -118,10 +118,6 @@
           g_data['load_status'] = AdingoFluct.NONE;
           console.log('reload', gid);
           this.render_queue.push(unit_id);
-          var unit_div = this.util.byId('adingoFluctUnit_'+ unit_id);
-          while(unit_div.firstChild){
-            unit_div.removeChild(unit_div.firstChild);
-          }
           this.load(gid);
         },
         
@@ -186,6 +182,8 @@
           var gid = adData.shift();
           var adinfo = adData.shift();
           var unit_div_id = 'adingoFluctUnit_'+ adinfo['unit_id'];
+          this.util.clearDiv(adinfo['unit_id']);
+
           switch(adinfo['creative_type']){
           case 'html':
             this.util.html_ad(unit_div_id, adinfo);
@@ -194,10 +192,15 @@
             this.util.flash_ad(unit_div_id, adinfo);
             break;
           case 'image':
-            this.util.overlay(adinfo);
-            this.util.image_ad('adingoFluctOverlay_' + adinfo['unit_id'], adinfo);
-            this.moveWatcher = setTimeout(function(){ window['adingoFluct'].move('adingoFluctOverlay_' + adinfo['unit_id']);}, 100);
-            this.visibleOverlay('adingoFluctOverlay_' + adinfo['unit_id']);
+            if(adinfo['overlay'] === 1){
+              this.util.overlay(adinfo);
+              this.util.image_ad('adingoFluctOverlay_' + adinfo['unit_id'], adinfo);
+              this.visibleOverlay('adingoFluctOverlay_' + adinfo['unit_id']);
+              this.moveWatcher = setTimeout(function(){ window['adingoFluct'].move('adingoFluctOverlay_' + adinfo['unit_id']);}, 100);
+            }
+            else{
+              this.util.image_ad(unit_div_id, adinfo);
+            }
             this.reloadInvoke(gid, adinfo['unit_id']);
             break;
           default:
@@ -231,20 +234,12 @@
         show: function(id, effectValue){
           clearTimeout(this.effectWatcher);
           this.effectWatcher = null;
-          
           var target = this.util.byId(id);
-          
           effectValue = effectValue + 0.09;
-          
-          target.style.opacity = effectValue;
-          target.style.filter = "alpha(opacity=" + 100 * effectValue + ")";
-          if( target.style.opacity <= 1){
-            target = null;
+          this.util.setOpacity(target, effectValue);
+          target = null;
+          if( effectValue <= 1){
             this.effectWatcher = setTimeout(function(){window['adingoFluct'].show(id, effectValue);}, 24);
-          }
-          else{
-            target = null;
-            
           }
         },
         
@@ -272,6 +267,10 @@
                 this.moveWatcher = setTimeout(function(){window['adingoFluct'].move(id);}, 100);
                 return;
               }
+            }
+            else{
+              var target = this.util.byId(id);
+              this.util.setOpacity(target, 0);
             }
             this.effectExecute = true;
             this.visibleOverlay(id);
