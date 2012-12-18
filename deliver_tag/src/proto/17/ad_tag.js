@@ -185,31 +185,38 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       var unit_div_id = 'adingoFluctUnit_' + adinfo['unit_id'];
       this.util.clearDiv(adinfo['unit_id']);
 
+      var insertAdId = null;
+      if (adinfo['overlay'] === 1) {
+        insertAdId = this.util.overlay(adinfo);
+        this.moveWatcher = setTimeout(function() {
+          window['adingoFluct'].move(insertAdId);
+        }, 100);
+      }
+      else{
+        insertAdId = unit_div_id;
+      }
       switch (adinfo['creative_type']) {
       case 'html':
-        this.util.html_ad(unit_div_id, adinfo);
+        this.util.html_ad(insertAdId, adinfo);
         break;
       case 'flash':
-        this.util.flash_ad(unit_div_id, adinfo);
+        this.util.flash_ad(insertAdId, adinfo);
         break;
       case 'image':
-        if (adinfo['overlay'] === 1) {
-          this.util.overlay(adinfo);
-          this.util.image_ad('adingoFluctOverlay_' + adinfo['unit_id'], adinfo);
-          this.visibleOverlay('adingoFluctOverlay_' + adinfo['unit_id']);
-          this.moveWatcher = setTimeout(function() {
-            window['adingoFluct'].move('adingoFluctOverlay_'
-                + adinfo['unit_id']);
-          }, 100);
-        } else {
-          this.util.image_ad(unit_div_id, adinfo);
-        }
-        this.reloadInvoke(gid, adinfo['unit_id']);
+        this.util.image_ad(insertAdId, adinfo);
         break;
       default:
-
+      }
+      
+      if(adinfo['overlay'] === 1){
+        this.visibleOverlay(insertAdId);
       }
       this.util.unit_beacon(unit_div_id, adinfo);
+      
+      if(adinfo['reload'] === 1){
+        this.reloadInvoke(gid, adinfo['unit_id']);
+      }
+      
     },
 
     visibleOverlay : function(id) {

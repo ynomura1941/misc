@@ -602,7 +602,8 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
                   + ';bottom:0px;left:0px;position:absolute;z-index:9993;display:none;font-size:18px;line-height:1.5em;visibility:visible;opacity:0;verticalAlign:middle;padding:0px;margin:0px;border:none;overflow: hidden;');
       div.appendChild(over);
       div = null;
-      return over;
+      over = null;
+      return 'adingoFluctOverlay_' + ad['unit_id'];
     },
 
     /**
@@ -628,7 +629,8 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       target.style.opacity = op;
       target.style.filter = "alpha(opacity=" + 100 * op + ")";
 
-    }
+    },
+
   };
   window['AdingoFluctCommon'] = AdingoFluctCommon;
 }
