@@ -8,22 +8,24 @@ if (typeof (window['adingoFluct']) == 'undefined') {
   var AdingoFluct = function() {
     this.util = new AdingoFluctCommon();
     this.data = {};
-    this.render_queue = [];
-    this.rendered_units = [];
+    this.render_queue = []; //unit_id list
+    this.rendered_units = []; //unit_id list
     this.effectWatcher = null;
     this.effectExecute = false;
     this.moveWatcher = null;
     this.moveExecute = false;
-    this.overlayUnits = {};
+    this.overlayUnits = {}; // {unit_id => {'winPosX' => px, 'winPosY' => px}}
     this.reloadWatcher = null;
     this.synced = false;
+    this.refreshUnits = {}; //{groupId => unit_data}
   };
-  //AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
-  AdingoFluct.URL = 'http://dl.dropbox.com/u/79806951/t31772/new_fluct_json.js?';
+  AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
+  //AdingoFluct.URL = 'http://dl.dropbox.com/u/79806951/t31772/new_fluct_json.js?';
   AdingoFluct.LOAD_NONE = 0;
   AdingoFluct.LOADING = 1;
   AdingoFluct.LOADED = 2;
   AdingoFluct.LOAD_ERROR = 3;
+  
   AdingoFluct.prototype = {
     /**
      * 
@@ -49,6 +51,7 @@ if (typeof (window['adingoFluct']) == 'undefined') {
         this.reloadWatcher = null;
       }
       this.synced = false;
+      this.refreshUnits = null;
     },
 
     /**
@@ -86,7 +89,6 @@ if (typeof (window['adingoFluct']) == 'undefined') {
             if (rest != null) {
               this.showAd(rest);
             }
-
           }
         }
       }
@@ -106,9 +108,16 @@ if (typeof (window['adingoFluct']) == 'undefined') {
     },
 
     reloadInvoke : function(gid, unit_id) {
+      var group_info = this.data[gid];
+      
+      var rate = this.util.hv(group_info, 'rate');
+      
+      if( rate == null || parseInt(rate) <= 0){
+        rate = 60; //default refresh rate (seconds)
+      }
       this.reloadWatcher = setTimeout(function() {
         window['adingoFluct'].reload(gid, unit_id);
-      }, 5000);
+      }, rate * 1000);
     },
 
     reload : function(gid, unit_id) {
@@ -127,7 +136,7 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       var url = null;
       var g_data = this.data[gid];
       if (typeof (g_data['url']) != 'undefined') {
-        url = g_data['url'];
+        url = g_data['url']; // from query parameter
       } else {
         url = AdingoFluct.URL;
       }
@@ -209,17 +218,37 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       }
       
       if(adinfo['overlay'] === 1){
-        this.visibleOverlay(insertAdId);
+        this.visibleOverlay(insertAdId, 500);
+        window.document.addEventListener('touchstart', function(e){window['adingoFluct'].toucheHandler(e);}, true);
       }
       this.util.unit_beacon(unit_div_id, adinfo);
       
       if(adinfo['reload'] === 1){
+        this.refreshUnits[gid] = adinfo;
         this.reloadInvoke(gid, adinfo['unit_id']);
       }
       
     },
+    toucheHandler: function(e){
 
-    visibleOverlay : function(id) {
+      if(e.srcElement.offsetParent == null || e.srcElement.offsetParent.className !== 'adingoFluctOverlay'){
+        if(this.effectWatcher !== null){
+          if( this.effectExecute === false ){
+            clearTimeout(this.effectWatcher);
+            this.effectWatcher = null;
+          }
+          else{
+            return;
+          }
+        }
+        
+        
+        for(var unit_element_id in this.overlayUnits){
+          this.visibleOverlay(unit_element_id, 1000);
+        }
+      }
+    },
+    visibleOverlay : function(id, wait) {
       this.effectExecute = false;
       var target = this.util.byId(id);
       target.style.display = 'block';
@@ -230,8 +259,9 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       if (this.util.offsetY() + this.util.wheight() >= this.util.dheight()) {
         y = lpos['top'] + 'px';
       }
-      target.style.opacity = 0;
-      target.style.filter = "alpha(opacity=" + 0 + ")";
+      this.util.setOpacity(target, 0);
+      //target.style.opacity = 0;
+      //target.style.filter = "alpha(opacity=" + 0 + ")";
       target.style.top = y;
       target.style.left = x;
       target = null;
@@ -241,7 +271,7 @@ if (typeof (window['adingoFluct']) == 'undefined') {
 
       this.effectWatcher = setTimeout(function() {
         window['adingoFluct'].show(id, 0);
-      }, 500);
+      }, wait);
     },
 
     show : function(id, effectValue) {
@@ -287,7 +317,7 @@ if (typeof (window['adingoFluct']) == 'undefined') {
           this.util.setOpacity(target, 0);
         }
         this.effectExecute = true;
-        this.visibleOverlay(id);
+        this.visibleOverlay(id, 500);
       }
       this.moveWatcher = setTimeout(function() {
         window['adingoFluct'].move(id);

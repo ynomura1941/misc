@@ -305,10 +305,12 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     beacon : function(url) {
       var beacon = window.document.createElement('img');
       beacon.setAttribute('src', url);
+      
       beacon.setAttribute('style',
-          'display:none;position:absolute;border:none;padding:0;margin:0;');
+          'display:none;position:absolute;border:none;padding:0;margin:0;vertical-align:top;');
       beacon.setAttribute('width', 0);
       beacon.setAttribute('height', 0);
+      beacon.setAttribute('border', 0);
       return beacon;
     },
 
@@ -364,7 +366,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
      * @returns
      */
     iframe : function(id, ad) {
-      var w = ad['w'] + 'px', h = ad['h'] + 'px';
+      var w = ad['width'] + 'px', h = ad['height'] + 'px';
       var temp = this.create_element('iframe');
       temp.setAttribute('id', id);
       temp
@@ -372,9 +374,9 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
               'style',
               'width:'
                   + w
-                  + 'px;height:'
+                  + ';height:'
                   + h
-                  + 'px;border:none;padding:0;margin:0;margin-bottom:-4px;pointer-events:auto;');
+                  + ';border:none;padding:0;margin:0;margin-bottom:-4px;pointer-events:auto;');
       temp.setAttribute('marginwidth', 0);
       temp.setAttribute('marginheight', 0);
       temp.setAttribute('allowtransparency', 'false');
@@ -477,7 +479,8 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       temp.setAttribute('src', ad['creative_url']);
       temp.setAttribute('width', ad['width']);
       temp.setAttribute('height', ad['height']);
-      temp.setAttribute('style', 'border:none;padding:0;margin:0;');
+      temp.setAttribute('border', 0);
+      temp.setAttribute('style', 'border:none;padding:0;margin:0;vertical-align:top;');
       if (ad['alt'].length > 0) {
         temp.setAttribute('alt', this.unicodeDecoder(ad['alt']));
       }
@@ -510,6 +513,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
         objStr = objStr.replace(/\{\$sHeight\}/g, ad['height']);
         objStr = objStr.replace(/\{\$sSrc}/g, ad['creative_url']);
         objStr = objStr.replace(/\{\$flashVars}/g, flashVars);
+        /*
         var iframe = this.iframe('adingoFluctIframe_' + ad['unit_id'], ad);
         div.appendChild(iframe);
         var iframeDoc = iframe.contentWindow.document;
@@ -520,6 +524,8 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
         iframeDoc.close();
         iframeDoc = null;
         iframe = null;
+        */
+        div.innerHTML = objStr;
         div = null;
         return true;
       } else {
@@ -529,7 +535,8 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
           temp.setAttribute('src', ad['alt_image']);
           temp.setAttribute('width', ad['width']);
           temp.setAttribute('height', ad['height']);
-          temp.setAttribute('style', 'border:none;padding:0;margin:0;');
+          temp.setAttribute('border', 0);
+          temp.setAttribute('style', 'border:none;padding:0;margin:0;vertical-align:top;');
           if (ad['alt'].length > 0) {
             temp.setAttribute('alt', this.unicodeDecoder(ad['alt']));
           }
@@ -592,6 +599,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       var h = ad['height'] + 'px';
       var w = ad['width'] + 'px';
       over.setAttribute('id', 'adingoFluctOverlay_' + ad['unit_id']);
+      over.setAttribute('class', 'adingoFluctOverlay');
       over
           .setAttribute(
               'style',
@@ -630,7 +638,29 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       target.style.filter = "alpha(opacity=" + 100 * op + ")";
 
     },
-
+    hv: function(hash, key){
+      if( typeof(hash[key]) === 'undefined'){
+        return null;
+      }
+      return hash[key];
+    },
+    
+    unit: function(target, search_id){
+      for( var group_id in target){
+        var group = target[group_id];
+        
+        for( var i = 0; i < group['json']['num']; i ++ ){
+          var ad = group['json']['ads'][i];
+          if( ad['unit_id'] == unit_id ){
+            return ad;
+          }
+        }
+      }
+      return null;
+    }
+    
+    
+    
   };
   window['AdingoFluctCommon'] = AdingoFluctCommon;
 }

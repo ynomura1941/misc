@@ -306,10 +306,12 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     beacon : function(url) {
       var beacon = window.document.createElement('img');
       beacon.setAttribute('src', url);
+      
       beacon.setAttribute('style',
-          'display:none;position:absolute;border:none;padding:0;margin:0;');
+          'display:none;position:absolute;border:none;padding:0;margin:0;vertical-align:top;');
       beacon.setAttribute('width', 0);
       beacon.setAttribute('height', 0);
+      beacon.setAttribute('border', 0);
       return beacon;
     },
 
@@ -365,7 +367,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
      * @returns
      */
     iframe : function(id, ad) {
-      var w = ad['w'] + 'px', h = ad['h'] + 'px';
+      var w = ad['width'] + 'px', h = ad['height'] + 'px';
       var temp = this.create_element('iframe');
       temp.setAttribute('id', id);
       temp
@@ -373,9 +375,9 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
               'style',
               'width:'
                   + w
-                  + 'px;height:'
+                  + ';height:'
                   + h
-                  + 'px;border:none;padding:0;margin:0;margin-bottom:-4px;pointer-events:auto;');
+                  + ';border:none;padding:0;margin:0;margin-bottom:-4px;pointer-events:auto;');
       temp.setAttribute('marginwidth', 0);
       temp.setAttribute('marginheight', 0);
       temp.setAttribute('allowtransparency', 'false');
@@ -478,7 +480,8 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       temp.setAttribute('src', ad['creative_url']);
       temp.setAttribute('width', ad['width']);
       temp.setAttribute('height', ad['height']);
-      temp.setAttribute('style', 'border:none;padding:0;margin:0;');
+      temp.setAttribute('border', 0);
+      temp.setAttribute('style', 'border:none;padding:0;margin:0;vertical-align:top;');
       if (ad['alt'].length > 0) {
         temp.setAttribute('alt', this.unicodeDecoder(ad['alt']));
       }
@@ -511,6 +514,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
         objStr = objStr.replace(/\{\$sHeight\}/g, ad['height']);
         objStr = objStr.replace(/\{\$sSrc}/g, ad['creative_url']);
         objStr = objStr.replace(/\{\$flashVars}/g, flashVars);
+        /*
         var iframe = this.iframe('adingoFluctIframe_' + ad['unit_id'], ad);
         div.appendChild(iframe);
         var iframeDoc = iframe.contentWindow.document;
@@ -521,6 +525,8 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
         iframeDoc.close();
         iframeDoc = null;
         iframe = null;
+        */
+        div.innerHTML = objStr;
         div = null;
         return true;
       } else {
@@ -530,7 +536,8 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
           temp.setAttribute('src', ad['alt_image']);
           temp.setAttribute('width', ad['width']);
           temp.setAttribute('height', ad['height']);
-          temp.setAttribute('style', 'border:none;padding:0;margin:0;');
+          temp.setAttribute('border', 0);
+          temp.setAttribute('style', 'border:none;padding:0;margin:0;vertical-align:top;');
           if (ad['alt'].length > 0) {
             temp.setAttribute('alt', this.unicodeDecoder(ad['alt']));
           }
@@ -593,6 +600,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       var h = ad['height'] + 'px';
       var w = ad['width'] + 'px';
       over.setAttribute('id', 'adingoFluctOverlay_' + ad['unit_id']);
+      over.setAttribute('class', 'adingoFluctOverlay');
       over
           .setAttribute(
               'style',
@@ -631,7 +639,29 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       target.style.filter = "alpha(opacity=" + 100 * op + ")";
 
     },
-
+    hv: function(hash, key){
+      if( typeof(hash[key]) === 'undefined'){
+        return null;
+      }
+      return hash[key];
+    },
+    
+    unit: function(target, search_id){
+      for( var group_id in target){
+        var group = target[group_id];
+        
+        for( var i = 0; i < group['json']['num']; i ++ ){
+          var ad = group['json']['ads'][i];
+          if( ad['unit_id'] == unit_id ){
+            return ad;
+          }
+        }
+      }
+      return null;
+    }
+    
+    
+    
   };
   window['AdingoFluctCommon'] = AdingoFluctCommon;
 }
@@ -694,22 +724,24 @@ if (typeof (window['adingoFluct']) == 'undefined') {
   var AdingoFluct = function() {
     this.util = new AdingoFluctCommon();
     this.data = {};
-    this.render_queue = [];
-    this.rendered_units = [];
+    this.render_queue = []; //unit_id list
+    this.rendered_units = []; //unit_id list
     this.effectWatcher = null;
     this.effectExecute = false;
     this.moveWatcher = null;
     this.moveExecute = false;
-    this.overlayUnits = {};
+    this.overlayUnits = {}; // {unit_id => {'winPosX' => px, 'winPosY' => px}}
     this.reloadWatcher = null;
     this.synced = false;
+    this.refreshUnits = {}; //{groupId => unit_data}
   };
-  //AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
-  AdingoFluct.URL = 'http://dl.dropbox.com/u/79806951/t31772/new_fluct_json.js?';
+  AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
+  //AdingoFluct.URL = 'http://dl.dropbox.com/u/79806951/t31772/new_fluct_json.js?';
   AdingoFluct.LOAD_NONE = 0;
   AdingoFluct.LOADING = 1;
   AdingoFluct.LOADED = 2;
   AdingoFluct.LOAD_ERROR = 3;
+  
   AdingoFluct.prototype = {
     /**
      * 
@@ -735,6 +767,7 @@ if (typeof (window['adingoFluct']) == 'undefined') {
         this.reloadWatcher = null;
       }
       this.synced = false;
+      this.refreshUnits = null;
     },
 
     /**
@@ -772,7 +805,6 @@ if (typeof (window['adingoFluct']) == 'undefined') {
             if (rest != null) {
               this.showAd(rest);
             }
-
           }
         }
       }
@@ -792,9 +824,16 @@ if (typeof (window['adingoFluct']) == 'undefined') {
     },
 
     reloadInvoke : function(gid, unit_id) {
+      var group_info = this.data[gid];
+      
+      var rate = this.util.hv(group_info, 'rate');
+      
+      if( rate == null || parseInt(rate) <= 0){
+        rate = 60; //default refresh rate (seconds)
+      }
       this.reloadWatcher = setTimeout(function() {
         window['adingoFluct'].reload(gid, unit_id);
-      }, 5000);
+      }, rate * 1000);
     },
 
     reload : function(gid, unit_id) {
@@ -813,7 +852,7 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       var url = null;
       var g_data = this.data[gid];
       if (typeof (g_data['url']) != 'undefined') {
-        url = g_data['url'];
+        url = g_data['url']; // from query parameter
       } else {
         url = AdingoFluct.URL;
       }
@@ -895,17 +934,37 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       }
       
       if(adinfo['overlay'] === 1){
-        this.visibleOverlay(insertAdId);
+        this.visibleOverlay(insertAdId, 500);
+        window.document.addEventListener('touchstart', function(e){window['adingoFluct'].toucheHandler(e);}, true);
       }
       this.util.unit_beacon(unit_div_id, adinfo);
       
       if(adinfo['reload'] === 1){
+        this.refreshUnits[gid] = adinfo;
         this.reloadInvoke(gid, adinfo['unit_id']);
       }
       
     },
+    toucheHandler: function(e){
 
-    visibleOverlay : function(id) {
+      if(e.srcElement.offsetParent == null || e.srcElement.offsetParent.className !== 'adingoFluctOverlay'){
+        if(this.effectWatcher !== null){
+          if( this.effectExecute === false ){
+            clearTimeout(this.effectWatcher);
+            this.effectWatcher = null;
+          }
+          else{
+            return;
+          }
+        }
+        
+        
+        for(var unit_element_id in this.overlayUnits){
+          this.visibleOverlay(unit_element_id, 1000);
+        }
+      }
+    },
+    visibleOverlay : function(id, wait) {
       this.effectExecute = false;
       var target = this.util.byId(id);
       target.style.display = 'block';
@@ -916,8 +975,9 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       if (this.util.offsetY() + this.util.wheight() >= this.util.dheight()) {
         y = lpos['top'] + 'px';
       }
-      target.style.opacity = 0;
-      target.style.filter = "alpha(opacity=" + 0 + ")";
+      this.util.setOpacity(target, 0);
+      //target.style.opacity = 0;
+      //target.style.filter = "alpha(opacity=" + 0 + ")";
       target.style.top = y;
       target.style.left = x;
       target = null;
@@ -927,7 +987,7 @@ if (typeof (window['adingoFluct']) == 'undefined') {
 
       this.effectWatcher = setTimeout(function() {
         window['adingoFluct'].show(id, 0);
-      }, 500);
+      }, wait);
     },
 
     show : function(id, effectValue) {
@@ -973,7 +1033,7 @@ if (typeof (window['adingoFluct']) == 'undefined') {
           this.util.setOpacity(target, 0);
         }
         this.effectExecute = true;
-        this.visibleOverlay(id);
+        this.visibleOverlay(id, 500);
       }
       this.moveWatcher = setTimeout(function() {
         window['adingoFluct'].move(id);
