@@ -705,9 +705,11 @@ if (typeof (window['adingoFluctSync']) === 'undefined') {
   AdingoFluctSync.render = function(util, target, syncs) {
     for ( var sync in syncs) {
       if (sync === 'logly') {
-        util.insertAfter(target, AdingoFluctSync[sync](util, syncs[sync]));
+        //util.insertAfter(target, AdingoFluctSync[sync](util, syncs[sync]));
+        target.parentNode.insertBefore(AdingoFluctSync[sync](util, syncs[sync]), target);
       } else {
-        util.insertAfter(target, AdingoFluctSync[sync](util));
+        //util.insertAfter(target, AdingoFluctSync[sync](util));
+        target.parentNode.insertBefore(AdingoFluctSync[sync](util), target);
       }
     }
   };
@@ -946,7 +948,6 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       
     },
     toucheHandler: function(e){
-
       if(e.srcElement.offsetParent == null || e.srcElement.offsetParent.className !== 'adingoFluctOverlay'){
         if(this.effectWatcher !== null){
           if( this.effectExecute === false ){
@@ -957,8 +958,6 @@ if (typeof (window['adingoFluct']) == 'undefined') {
             return;
           }
         }
-        
-        
         for(var unit_element_id in this.overlayUnits){
           this.visibleOverlay(unit_element_id, 1000);
         }

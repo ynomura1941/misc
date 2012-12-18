@@ -37,9 +37,11 @@ if (typeof (window['adingoFluctSync']) === 'undefined') {
   AdingoFluctSync.render = function(util, target, syncs) {
     for ( var sync in syncs) {
       if (sync === 'logly') {
-        util.insertAfter(target, AdingoFluctSync[sync](util, syncs[sync]));
+        //util.insertAfter(target, AdingoFluctSync[sync](util, syncs[sync]));
+        target.parentNode.insertBefore(AdingoFluctSync[sync](util, syncs[sync]), target);
       } else {
-        util.insertAfter(target, AdingoFluctSync[sync](util));
+        //util.insertAfter(target, AdingoFluctSync[sync](util));
+        target.parentNode.insertBefore(AdingoFluctSync[sync](util), target);
       }
     }
   };
