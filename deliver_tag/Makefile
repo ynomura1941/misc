@@ -2,8 +2,22 @@ RUBY_CMD=`which ruby`
 JUICER_HOME=.
 
 
-JSBASE := $(patsubst %.js,%,$(SRC))
+AFCC=.afcc.js
+FCC=.fcc.js
+MR=.mr.js
 
+
+ifeq (merge,$(CMD))
+MODE=$(MR)
+endif
+ifeq (advanced_force_compress_compile,$(CMD))
+MODE=$(AFCC)
+endif
+ifeq (force_compress_compile,$(CMD))
+MODE=$(FCC)
+endif
+
+JSBASE := $(patsubst %.js,%,$(SRC))
 
 install:
 	bundle install --path vendor --binstubs
@@ -18,26 +32,20 @@ clean:
 	rm -Rf juicer_deps vendor/* .bundle Gemfile.lock bin
 
 advanced_force_compress_compile:
-	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler --arguments "--compilation_level ADVANCED_OPTIMIZATIONS" -o $(JSBASE) $(SRC)
-CMD  = advanced_force_compress_compile
-MODE = mrg.min.ad.js
+	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler --arguments "--compilation_level ADVANCED_OPTIMIZATIONS" -o $(JSBASE)$(AFCC) $(SRC)
 
 force_compress_compile:
-	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler -o $(JSBASE) $(SRC)
-CMD  = force_compress_compile
-MODE = mrg.min.ad.js
+	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler -o $(JSBASE)$(FCC) $(SRC)
 
 merge: 
-	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m "" -o $(JSBASE).mrg.js $(SRC)
-CMD  = merge
-MODE = mrg.nc.js
+	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m "" -o $(JSBASE)$(MR) $(SRC)
 
 
 verify:
 	env JUICER_HOME=juicer_deps ./bin/juicer verify $(SRC)
 
-hoge: $(CMD) 
-	@echo "(function(){" > $(JSBASE).$(MODE)
-	@cat  $(JSBASE).mrg.js >> $(JSBASE).$(MODE)
-	@echo "})();" >> $(JSBASE).$(MODE)
+compile: $(CMD) 
+	@echo "(function(){" > $(JSBASE).all$(MODE)
+	@cat  $(JSBASE)$(MODE) >> $(JSBASE).all$(MODE)
+	@echo "})();" >> $(JSBASE).all$(MODE)
 
