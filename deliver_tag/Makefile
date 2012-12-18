@@ -19,6 +19,9 @@ force_compress_compile:
 
 merge:
 	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m "" -o $(SRC).mrg.js $(SRC)
+	@echo "(function(){" > $(SRC).mrg.noc.js
+	@cat  $(SRC).mrg.js >> $(SRC).mrg.noc.js
+	@echo "})();" >> $(SRC).mrg.noc.js
 
 verify:
 	env JUICER_HOME=juicer_deps ./bin/juicer verify $(SRC)
