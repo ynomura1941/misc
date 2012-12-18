@@ -18,17 +18,26 @@ clean:
 	rm -Rf juicer_deps vendor/* .bundle Gemfile.lock bin
 
 advanced_force_compress_compile:
-	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler --arguments "--compilation_level ADVANCED_OPTIMIZATIONS" $(SRC)
+	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler --arguments "--compilation_level ADVANCED_OPTIMIZATIONS" -o $(JSBASE) $(SRC)
+CMD  := advanced_force_compress_compile
+MODE := mrg.min.ad.js
+
 force_compress_compile:
-	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler $(SRC)
+	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler -o $(JSBASE) $(SRC)
+CMD  := force_compress_compile
+MODE := mrg.min.ad.js
 
 merge: 
-	echo $(JSBASE)
 	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m "" -o $(JSBASE).mrg.js $(SRC)
-	@echo "(function(){" > $(JSBASE).mrg.noc.js
-	@cat  $(JSBASE).mrg.js >> $(JSBASE).mrg.noc.js
-	@echo "})();" >> $(JSBASE).mrg.noc.js
+CMD  := merge
+MODE := mrg.nc.js
+
 
 verify:
 	env JUICER_HOME=juicer_deps ./bin/juicer verify $(SRC)
+
+$(MODE):$(CMD) 
+	@echo "(function(){" > $(JSBASE).$(MODE)
+	@cat  $(JSBASE).mrg.js >> $(JSBASE).$(MODE)
+	@echo "})();" >> $(JSBASE).$(MODE)
 
