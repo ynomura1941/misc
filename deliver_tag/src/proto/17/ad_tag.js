@@ -18,7 +18,8 @@ if (typeof (window['adingoFluct']) == 'undefined') {
     this.reloadWatcher = null;
     this.synced = false;
   };
-  AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
+  //AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
+  AdingoFluct.URL = 'http://dl.dropbox.com/u/79806951/t31772/new_fluct_json.js?';
   AdingoFluct.LOAD_NONE = 0;
   AdingoFluct.LOADING = 1;
   AdingoFluct.LOADED = 2;
