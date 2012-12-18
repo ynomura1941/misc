@@ -1,5 +1,10 @@
 RUBY_CMD=`which ruby`
 JUICER_HOME=.
+
+
+JSBASE := $(patsubst %.js,%,$(SRC))
+
+
 install:
 	bundle install --path vendor --binstubs
 	env JUICER_HOME=juicer_deps ./bin/juicer install yui_compressor
@@ -17,11 +22,12 @@ advanced_force_compress_compile:
 force_compress_compile:
 	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler $(SRC)
 
-merge:
-	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m "" -o $(SRC).mrg.js $(SRC)
-	@echo "(function(){" > $(SRC).mrg.noc.js
-	@cat  $(SRC).mrg.js >> $(SRC).mrg.noc.js
-	@echo "})();" >> $(SRC).mrg.noc.js
+merge: 
+	echo $(JSBASE)
+	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m "" -o $(JSBASE).mrg.js $(SRC)
+	@echo "(function(){" > $(JSBASE).mrg.noc.js
+	@cat  $(JSBASE).mrg.js >> $(JSBASE).mrg.noc.js
+	@echo "})();" >> $(JSBASE).mrg.noc.js
 
 verify:
 	env JUICER_HOME=juicer_deps ./bin/juicer verify $(SRC)
