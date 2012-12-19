@@ -1,31 +1,39 @@
 (function(){
-/*jslint windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
-/*global window */
-if (typeof (window['AdingoFluctCommon']) == 'undefined') {
+/*jslint noarg: false, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
+
+/*global window escape*/
+if (typeof (window['AdingoFluctCommon']) === 'undefined') {
+  // for IE6
   if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function(elt /* , from */) {
+    Array.prototype.indexOf = function (elt /* , from */) {
       var len = this.length;
 
       var from = Number(arguments[1]) || 0;
       from = (from < 0) ? Math.ceil(from) : Math.floor(from);
-      if (from < 0)
+      if (from < 0) {
         from += len;
-
-      for (; from < len; from++) {
-        if (from in this && this[from] === elt)
+      }
+      for (; from < len; from += 1) {
+        if (from in this && this[from] === elt) {
           return from;
+        }
       }
       return -1;
     };
   }
-  ;
   var modedoc = /BackCompat/i.test(window.document.compatMode) ? window.document.body
       : window.document.documentElement;
 
-  var AdingoFluctCommon = function() {
-    this.flashInfo = (function() {
+  var AdingoFluctCommon = function () {
+    /**
+     * swfをレンダリング可能か判定した結果を格納したオブジェクトを保持する
+     * {v: ブラウザのフラッシュプレイヤのバージョン, exist: レンダリング可否, done: 判定済みかどうか, tag_template: swfのレンダリング内容
+     */
+    this.flashInfo = (function () {
       var rtn = {};
-      rtn['v'] = 0, rtn['exist'] = false, rtn['done'] = false;
+      rtn['v'] = 0;
+      rtn['exist'] = false;
+      rtn['done'] = false;
       rtn['tag_template'] = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'
           + 'codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0"'
           + 'width="{$sWidth}" height="{$sHeight}" style="border:none;padding:0;margin:0">'
@@ -47,17 +55,17 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
           + 'pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash">'
           + '</object>';
       var func = null;
-      return function() {
-        if (func != null) {
+      return function () {
+        if (func !== null) {
           return func();
         }
         var userAgent = window.navigator.userAgent.toLowerCase();
-        if (userAgent.indexOf('msie') != -1) {
+        if (userAgent.indexOf('msie') !== -1) {
           try {
             if (typeof new ActiveXObject('ShockwaveFlash.ShockwaveFlash') !== 'undefined') {
               var flashOCX = new ActiveXObject("ShockwaveFlash.ShockwaveFlash")
                   .GetVariable("$version");
-              rtn['v'] = parseInt(flashOCX.match(/([0-9]+)/)[0]);
+              rtn['v'] = parseInt(flashOCX.match(/([0-9]+)/)[0], 10);
               rtn['exist'] = true;
             }
           } catch (e) {
@@ -65,30 +73,39 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
         } else {
           if (typeof navigator.plugins["Shockwave Flash"] !== 'undefined') {
             rtn['v'] = parseInt(navigator.plugins["Shockwave Flash"].description
-                .match(/\d+\.\d+/));
-            rtn['exist'] = rtn['v'] != 0 ? true : false;
+                .match(/\d+\.\d+/), 10);
+            rtn['exist'] = rtn['v'] !== 0 ? true : false;
           }
         }
         rtn['done'] = true;
-        func = function() {
+        func = function () {
           return rtn;
         };
         return func();
       };
-    })();
+    }());
   };
 
   AdingoFluctCommon.prototype = {
 
-    gZoom : function() {
-      if (modedoc.style.zoom == '') {
+    /**
+     * グローバル座標系のズームを取得
+     * @returns
+     */
+    gZoom : function () {
+      if (modedoc.style.zoom === '') {
         return 1;
       } else {
         return modedoc.style.zoom;
       }
     },
-    lZoom : function(baseWidth) {
-      if (modedoc.style.zoom != '') {
+    /**
+     * ローカル座標系のズームを決める
+     * @param baseWidth 対象となるelement
+     * @returns {Number} ズーム値
+     */
+    lZoom : function (baseWidth) {
+      if (modedoc.style.zoom !== '') {
         if (this.dwidth() < baseWidth) {
           if (this.wwidth() <= baseWidth) {
             return this.dwidth() / baseWidth;
@@ -111,19 +128,35 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       }
     },
 
-    lposX : function(width) {
+    /**
+     * ローカル座標系においてelementが中央にくるxをきめる
+     * @param width element の width
+     * @returns {Number} x
+     */
+    lposX : function (width) {
       return ((this.offsetX() + this.wwidth() - (width * this.gZoom() * this
           .lZoom(width))) / this.gZoom())
           / this.lZoom(width) / 2;
     },
-
-    lposY : function(height, width) {
+    /**
+     * ローカル座標系においてelementがwindowの最下部にくるyをきめる
+     * @param height element の height
+     * @param width element の width
+     * @returns {Number} y
+     */
+    lposY : function (height, width) {
       return ((this.offsetY() + this.wheight() - (height * this.gZoom() * this
           .lZoom(width))) / this.gZoom())
           / this.lZoom(width);
     },
 
-    lposXY : function(width, height) {
+    /**
+     * ローカル座標系においてelementがwindowの中央下部にくるx,yを決める
+     * @param width element の width
+     * @param height element の height
+     * @returns {Object} {x: xの値, y: yの値, top: 画面の上部に置く場合のｙ}
+     */
+    lposXY : function (width, height) {
       var lzoom = this.lZoom(width);
       var gzoom = this.gZoom();
       var tmpy = this.offsetY();
@@ -140,10 +173,10 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     },
 
     /**
-     * 
+     * windowのwidth,heightを求める
      * @returns {h: get window height function, w: get window width function}
      */
-    wsize : function() {
+    wsize : function () {
       return {
         h : this.wheight,
         w : this.wwidth
@@ -151,54 +184,54 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     },
 
     /**
-     * 
-     * @returns
+     * windowのhegihtを求める
+     * @returns height
      */
-    wheight : function() {
+    wheight : function () {
       var func = null;
-      return (function() {
-        if (func == null) {
-          if (typeof (window.innerHeight) != 'undefined') {
-            func = function() {
+      return (function () {
+        if (func === null) {
+          if (typeof (window.innerHeight) !== 'undefined') {
+            func = function () {
               return window.innerHeight;
             };
           } else {
-            func = function() {
+            func = function () {
               return modedoc.clientHeight;
             };
           }
         }
         return func();
-      })();
+      }());
     },
 
     /**
-     * 
-     * @returns
+     * windowのwidthを求める
+     * @returns width
      */
-    wwidth : function() {
+    wwidth : function () {
       var func = null;
-      return (function() {
-        if (func == null) {
-          if (typeof (window.innerWidth) != 'undefined') {
-            func = function() {
+      return (function () {
+        if (func === null) {
+          if (typeof (window.innerWidth) !== 'undefined') {
+            func = function () {
               return window.innerWidth;
             };
           } else {
-            func = function() {
+            func = function () {
               return modedoc.clientWidth;
             };
           }
         }
         return func();
-      })();
+      }());
     },
 
     /**
-     * 
+     * documentのsizeを求める
      * @returns {___anonymous4554_4586}
      */
-    dsize : function() {
+    dsize : function () {
       return {
         h : this.dheight,
         w : this.dwidth
@@ -206,39 +239,41 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     },
 
     /**
-     * 
+     * documentのheightを求める
      * @returns
      */
-    dheight : function() {
+    dheight : function () {
       var func = null;
-      return (function() {
-        if (func == null) {
-          func = function() {
+      return (function () {
+        if (func === null) {
+          func = function () {
             return Math.max(modedoc.clientHeight, modedoc.scrollHeight);
           };
         }
         return func();
-      })();
+      }());
     },
 
     /**
-     * 
+     * documentのwidthを求める
      * @returns
      */
-    dwidth : function() {
+    dwidth : function () {
       var func = null;
-      return (function() {
-        if (func == null) {
-          console.log(modedoc.clientHeight, modedoc.scrollHeight);
-          func = function() {
+      return (function () {
+        if (func === null) {
+          func = function () {
             return Math.max(modedoc.clientHeight, modedoc.scrollHeight);
           };
         }
         return func();
-      })();
+      }());
     },
 
-    scrollPos : function() {
+    /**
+     * scroll時のpositionを求める
+     */
+    scrollPos : function () {
       return {
         y : this.scrollY,
         x : this.scrollX
@@ -246,55 +281,55 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     },
 
     /**
-     * 
+     * scroll後のyを求める
      * @returns
      */
-    offsetY : function() {
+    offsetY : function () {
       var func = null;
-      return (function() {
-        if (func == null) {
+      return (function () {
+        if (func === null) {
           if (typeof (window.scrollY) !== 'undefined') {
-            func = function() {
+            func = function () {
               return window.scrollY;
             };
           } else if (typeof (window.pageYOffset) !== 'undefined') {
-            func = function() {
+            func = function () {
               return window.pageYOffset;
             };
           } else {
-            func = function() {
+            func = function () {
               return modedoc.scrollTop;
             };
           }
         }
         return func();
-      })();
+      }());
     },
 
     /**
-     * 
+     * scroll後のyを求める
      * @returns
      */
-    offsetX : function() {
+    offsetX : function () {
       var func = null;
-      return (function() {
-        if (func == null) {
+      return (function () {
+        if (func === null) {
           if (typeof (window.scrollX) !== 'undefined') {
-            func = function() {
+            func = function () {
               return window.scrollX;
             };
           } else if (typeof (window.pageXOffset) !== 'undefined') {
-            func = function() {
+            func = function () {
               return window.pageXOffset;
             };
           } else {
-            func = function() {
+            func = function () {
               return modedoc.scrollLeft;
             };
           }
         }
         return func();
-      })();
+      }());
     },
 
     /**
@@ -303,7 +338,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
      * @param url
      * @returns
      */
-    beacon : function(url) {
+    beacon : function (url) {
       var beacon = window.document.createElement('img');
       beacon.setAttribute('src', url);
       
@@ -322,7 +357,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
      *          生成するタグ名
      * @returns
      */
-    create_element : function(tagName) {
+    create_element : function (tagName) {
       return window.document.createElement(tagName);
     },
 
@@ -331,7 +366,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
      * 
      * @param id
      */
-    deleteById : function(id) {
+    deleteById : function (id) {
       var target = this.byId(id);
       target.parentNode.removeChild(target);
     },
@@ -344,7 +379,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
      *          JSONPのエンドポイントURL
      * @returns {___loader0}
      */
-    loader : function(gid, url) {
+    loader : function (gid, url) {
       var loader = this.create_element('script');
       loader.setAttribute('id', 'fluctAdLoader_' + gid);
       loader.src = url;
@@ -352,21 +387,21 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     },
 
     /**
-     * 
+     * idでelementを取得する
      * @param id
      * @returns
      */
-    byId : function(id) {
+    byId : function (id) {
       return window.document.getElementById(id);
     },
 
     /**
-     * 
+     * iframe elementを生成する
      * @param id
      * @param ad
      * @returns
      */
-    iframe : function(id, ad) {
+    iframe : function (id, ad) {
       var w = ad['width'] + 'px', h = ad['height'] + 'px';
       var temp = this.create_element('iframe');
       temp.setAttribute('id', id);
@@ -389,11 +424,11 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     },
 
     /**
-     * 
+     * クエリーパラメータをハッシュにする
      * @param e
      * @returns {___anonymous5696_5697}
      */
-    parse_param : function(e) {
+    parse_param : function (e) {
       var params = {};
 
       params['tag'] = this.myTag(e);
@@ -406,7 +441,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       var paramStr = queryStr.split('&');
       var paramNum = paramStr.length;
 
-      for ( var i = 0; i < paramNum; i++) {
+      for (var i = 0; i < paramNum; i += 1) {
         var param = paramStr[i].split('=');
         params[param[0]] = param[1];
       }
@@ -415,16 +450,22 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     },
 
     /**
-     * 
+     * 自身のscriptタグを取得
      * @param e
      * @returns
      */
-    myTag : function(e) {
-      if (e.nodeName.toLowerCase() == 'script')
+    myTag : function (e) {
+      if (e.nodeName.toLowerCase() === 'script') {
         return e;
-      return arguments.callee(e.lastChild);
+      }
+      return this.myTag(e.lastChild);
     },
-    insertAfter : function(referenceNode, newNode) {
+    /**
+     * 基準となるelementの後ろに挿入する
+     * @param referenceNode
+     * @param newNode
+     */
+    insertAfter : function (referenceNode, newNode) {
       referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
     },
 
@@ -434,7 +475,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
      * @param ad
      * @returns {Boolean}
      */
-    unit_beacon : function(unit_id, ad) {
+    unit_beacon : function (unit_id, ad) {
       var div = this.byId(unit_id);
       var beacon = this.beacon(ad['beacon']);
 
@@ -447,12 +488,12 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     ,
 
     /**
-     * 
+     * htmlクリエイティブを生成
      * @param id
      * @param ad
      * @returns {Boolean}
      */
-    html_ad : function(id, ad) {
+    html_ad : function (id, ad) {
       var div = this.byId(id);
       var iframe = this.iframe('adingoFluctIframe_' + ad['unit_id'], ad);
 
@@ -469,12 +510,12 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     },
 
     /**
-     * 
+     * イメージクリエイティブを生成
      * @param id
      * @param ad
      * @returns {Boolean}
      */
-    image_ad : function(id, ad) {
+    image_ad : function (id, ad) {
       var div = this.byId(id);
       var temp = this.create_element('img');
       temp.setAttribute('src', ad['creative_url']);
@@ -492,46 +533,33 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       link.appendChild(temp);
       div = null;
       link = null;
-      img = null;
+      temp = null;
       return true;
 
     },
 
     /**
-     * 
+     * フラッシュクリエイティブを生成
      * @param id
      * @param ad
      * @returns {Boolean}
      */
-    flash_ad : function(id, ad) {
+    flash_ad : function (id, ad) {
       var flashInfo = this.flashInfo();
+      var div = this.byId(id);
       if (flashInfo['exist'] && flashInfo['v'] > 5) {
-        var div = this.byId(id);
         var flashVars = 'clickTAG=' + escape(ad['landing_url']) + '&targetTAG='
             + this.openTarget(ad['open']);
         var objStr = flashInfo['tag_template'].replace(/\{\$sWidth\}/g,
             ad['width']);
         objStr = objStr.replace(/\{\$sHeight\}/g, ad['height']);
-        objStr = objStr.replace(/\{\$sSrc}/g, ad['creative_url']);
-        objStr = objStr.replace(/\{\$flashVars}/g, flashVars);
-        /*
-        var iframe = this.iframe('adingoFluctIframe_' + ad['unit_id'], ad);
-        div.appendChild(iframe);
-        var iframeDoc = iframe.contentWindow.document;
-        iframeDoc.open();
-        iframeDoc
-            .write('<html><head></head><body style="padding:0px;margin:0px;border:none;">'
-                + objStr + '</body></html>');
-        iframeDoc.close();
-        iframeDoc = null;
-        iframe = null;
-        */
+        objStr = objStr.replace(/\{\$sSrc\}/g, ad['creative_url']);
+        objStr = objStr.replace(/\{\$flashVars\}/g, flashVars);
         div.innerHTML = objStr;
         div = null;
         return true;
       } else {
-        if (ad['alt_mage'] != null && ad['alt_mage'] != '') {
-          var div = this.byId(id);
+        if (ad['alt_mage'] !== null && ad['alt_mage'] !== '') {
           var temp = this.create_element('img');
           temp.setAttribute('src', ad['alt_image']);
           temp.setAttribute('width', ad['width']);
@@ -548,7 +576,7 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
           link.appendChild(temp);
           div = null;
           link = null;
-          img = null;
+          temp = null;
           return true;
         } else {
           return false;
@@ -557,28 +585,28 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     },
 
     /**
-     * 
+     * ユニコードエスケープ文字列を数値参照文字列に変換する
      * @param str
      * @returns {String}
      */
-    unicodeDecoder : function(str) {
-      arrs = str.match(/\\u.{4}/g);
+    unicodeDecoder : function (str) {
+      var arrs = str.match(/\\u.{4}/g);
       var t = "";
-      if (arrs == null) {
+      if (arrs === null) {
         return '';
       }
-      for ( var i = 0; i < arrs.length; i++) {
+      for (var i = 0; i < arrs.length; i += 1) {
         t += String.fromCharCode(arrs[i].replace("\\u", "0x"));
       }
       return (t);
     },
 
     /**
-     * 
+     * ターゲットフラグ解析
      * @param flg
      * @returns {String}
      */
-    openTarget : function(flg) {
+    openTarget : function (flg) {
       switch (flg) {
       case 1:
         return '_blank';
@@ -590,11 +618,11 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
     },
 
     /**
-     * 
+     * オーバレイ表示枠の生成
      * @param ad
      * @returns
      */
-    overlay : function(ad) {
+    overlay : function (ad) {
       var div = this.byId('adingoFluctUnit_' + ad['unit_id']);
       var over = this.create_element('div');
       var h = ad['height'] + 'px';
@@ -620,10 +648,10 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
      * 
      * @param unit_id
      */
-    clearDiv : function(unit_id) {
+    clearDiv : function (unit_id) {
       var unit_div = this.byId('adingoFluctUnit_' + unit_id);
       var overlay_div = this.byId('adingoFluctOverlay_' + unit_id);
-      if (overlay_div == null) {
+      if (overlay_div === null) {
         while (unit_div.firstChild) {
           unit_div.removeChild(unit_div.firstChild);
         }
@@ -634,25 +662,42 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
       }
     },
 
-    setOpacity : function(target, op) {
+    /**
+     * 透過度を設定
+     * @param target
+     * @param op
+     */
+    setOpacity : function (target, op) {
       target.style.opacity = op;
       target.style.filter = "alpha(opacity=" + 100 * op + ")";
 
     },
-    hv: function(hash, key){
-      if( typeof(hash[key]) === 'undefined'){
+    /**
+     * ハッシュからキーの値を取得
+     * @param hash
+     * @param key
+     * @returns
+     */
+    hv: function (hash, key) {
+      if (typeof(hash[key]) === 'undefined'){
         return null;
       }
       return hash[key];
     },
     
-    unit: function(target, search_id){
-      for( var group_id in target){
+    /**
+     * ユニットの広告情報を取得
+     * @param target
+     * @param search_id
+     * @returns
+     */
+    unit: function (target, search_id) {
+      for (var group_id in target){
         var group = target[group_id];
         
-        for( var i = 0; i < group['json']['num']; i ++ ){
+        for (var i = 0; i < group['json']['num']; i += 1){
           var ad = group['json']['ads'][i];
-          if( ad['unit_id'] == unit_id ){
+          if( ad['unit_id'] === unit_id ){
             return ad;
           }
         }
@@ -666,14 +711,16 @@ if (typeof (window['AdingoFluctCommon']) == 'undefined') {
   window['AdingoFluctCommon'] = AdingoFluctCommon;
 }
 
-/*jslint windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
+/*jslint plusplus: true, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 /*global window escape */
 
 if (typeof (window['adingoFluctSync']) === 'undefined') {
-  var AdingoFluctSync = function() {
-  };
+  var AdingoFluctSync = function () {};
 
-  AdingoFluctSync['logly'] = function(util, logyid) {
+  /**
+   * logly 用 cookie sync tag 生成
+   */
+  AdingoFluctSync['logly'] = function (util, logyid) {
     var ref = '', url = window.document.referrer;
     try {
       ref = window.parent.document.referrer;
@@ -685,30 +732,43 @@ if (typeof (window['adingoFluctSync']) === 'undefined') {
     }
     var _lgy_ssp_id = 1;
     var _lgy_ssp_audience_id = '$luid';
-    var _lgy_query = 'sid=' + _lgy_ssp_id + '&aid=' + _lgy_ssp_audience_id
-        + '&url=' + escape(url) + '&rurl=' + escape(ref);
+    var _lgy_query = 'sid=' + _lgy_ssp_id + '&aid=' + _lgy_ssp_audience_id +
+    '&url=' + escape(url) + '&rurl=' + escape(ref);
     var src = (('https:' === window.document.location.protocol) ? 'https://'
-        : 'http://')
-        + 'dsp.logly.co.jp/sg.gif?' + _lgy_query;
+        : 'http://') +
+        'dsp.logly.co.jp/sg.gif?' + _lgy_query;
     return util.beacon(src);
   };
 
-  AdingoFluctSync['scaleout'] = function(util) {
-    var so_tp = encodeURIComponent(window.document.location.href), so_pp = encodeURIComponent(window.document.referrer), so_src = 'http://bid.socdm.com/rtb/sync?proto=adingo&sspid=adingo'
-        + '&tp=' + so_tp + '&pp=' + so_pp + "&t=.gif";
+  /**
+   * scaleout 用 cookie sync tag 生成
+   */
+  AdingoFluctSync['scaleout'] = function (util) {
+    var so_tp = encodeURIComponent(window.document.location.href);
+    var so_pp = encodeURIComponent(window.document.referrer);
+    var so_src = 'http://bid.socdm.com/rtb/sync?proto=adingo&sspid=adingo' +
+    '&tp=' + so_tp + '&pp=' + so_pp + "&t=.gif";
     return util.beacon(so_src);
   };
-  AdingoFluctSync['fout'] = function(util) {
+  
+  /**
+   * freakout 用 cookie sync tag 生成
+   */
+  AdingoFluctSync['fout'] = function (util) {
     return util.beacon('http://sync.fout.jp/sync?xid=fluct');
   };
 
-  AdingoFluctSync.render = function(util, target, syncs) {
-    for ( var sync in syncs) {
+  /**
+   * response jsonのsyncsの内容に従って、cookie sync tag をレンダリングする
+   * @param util ユーティリティーオブジェクト
+   * @param target レンダリングの基準となるelement
+   * @param syncs response json のsyncs
+   */
+  AdingoFluctSync.render = function (util, target, syncs) {
+    for (var sync in syncs) {
       if (sync === 'logly') {
-        //util.insertAfter(target, AdingoFluctSync[sync](util, syncs[sync]));
         target.parentNode.insertBefore(AdingoFluctSync[sync](util, syncs[sync]), target);
       } else {
-        //util.insertAfter(target, AdingoFluctSync[sync](util));
         target.parentNode.insertBefore(AdingoFluctSync[sync](util), target);
       }
     }
@@ -1047,4 +1107,4 @@ if (typeof (window['adingoFluct']) == 'undefined') {
 }
 window['adingoFluct'].setGroup(window.document);
 
-})();
+}());

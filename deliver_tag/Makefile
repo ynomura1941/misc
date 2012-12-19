@@ -47,5 +47,5 @@ verify:
 compile: $(CMD) 
 	@echo "(function(){" > $(JSBASE).all$(MODE)
 	@cat  $(JSBASE)$(MODE) >> $(JSBASE).all$(MODE)
-	@echo "})();" >> $(JSBASE).all$(MODE)
+	@echo "}());" >> $(JSBASE).all$(MODE)
 
