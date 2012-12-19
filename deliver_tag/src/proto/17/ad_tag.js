@@ -1,4 +1,4 @@
-/*jslint forin: true, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
+/*jslint debug: false, forin: true, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 
 /*global window AdingoFluctCommon adingoFluctSync*/
 /**
@@ -182,9 +182,8 @@ if (typeof (window['adingoFluct']) === 'undefined') {
             && temp_group_info['load_status'] === AdingoFluct.LOADED) {
           for (var i = 0; i < temp_group_info['json']['num']; i += 1) {
             var temp_ad = temp_group_info['json']['ads'][i];
-            if (temp_ad['unit_id'] === unit_id) {
+            if (String(temp_ad['unit_id']) === unit_id) {
               target_ad = [ group_id, temp_ad ];
-              temp_ad = null;
               break;
             }
           }

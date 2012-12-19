@@ -1,4 +1,4 @@
-/*jslint noarg: false, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
+/*jslint forin: true, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 
 /*global window escape*/
 if (typeof (window['AdingoFluctCommon']) === 'undefined') {
@@ -589,7 +589,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
      * @returns {String}
      */
     unicodeDecoder : function (str) {
-      var arrs = str.match(/\\u.{4}/g);
+      var arrs = str.match(/\\u[0-9a-fA-F]{4}/g);
       var t = "";
       if (arrs === null) {
         return '';
@@ -678,7 +678,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
      * @returns
      */
     hv: function (hash, key) {
-      if (typeof(hash[key]) === 'undefined'){
+      if (typeof(hash[key]) === 'undefined') {
         return null;
       }
       return hash[key];
@@ -691,21 +691,18 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
      * @returns
      */
     unit: function (target, search_id) {
-      for (var group_id in target){
+      for (var group_id in target) {
         var group = target[group_id];
         
-        for (var i = 0; i < group['json']['num']; i += 1){
+        for (var i = 0; i < group['json']['num']; i += 1) {
           var ad = group['json']['ads'][i];
-          if( ad['unit_id'] === unit_id ){
+          if (ad['unit_id'] === search_id) {
             return ad;
           }
         }
       }
       return null;
     }
-    
-    
-    
   };
   window['AdingoFluctCommon'] = AdingoFluctCommon;
 }
@@ -775,14 +772,15 @@ if (typeof (window['adingoFluctSync']) === 'undefined') {
   window["adingoFluctSync"] = AdingoFluctSync;
 }
 
-/*jslint windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
-/*global window */
+/*jslint debug: false, forin: true, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
+
+/*global window AdingoFluctCommon adingoFluctSync*/
 /**
  * @depends ../../common/1.js
  * @depends ../../cookie_sync/1.js
  */
-if (typeof (window['adingoFluct']) == 'undefined') {
-  var AdingoFluct = function() {
+if (typeof (window['adingoFluct']) === 'undefined') {
+  var AdingoFluct = function () {
     this.util = new AdingoFluctCommon();
     this.data = {};
     this.render_queue = []; //unit_id list
@@ -797,7 +795,6 @@ if (typeof (window['adingoFluct']) == 'undefined') {
     this.refreshUnits = {}; //{groupId => unit_data}
   };
   AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
-  //AdingoFluct.URL = 'http://dl.dropbox.com/u/79806951/t31772/new_fluct_json.js?';
   AdingoFluct.LOAD_NONE = 0;
   AdingoFluct.LOADING = 1;
   AdingoFluct.LOADED = 2;
@@ -805,25 +802,25 @@ if (typeof (window['adingoFluct']) == 'undefined') {
   
   AdingoFluct.prototype = {
     /**
-     * 
+     * デストラクタ
      */
-    destroy : function() {
+    destroy : function () {
       this.util = null;
       this.data = null;
       this.render_queue = null;
       this.rendered_units = null;
-      if (this.effectWatcher != null) {
+      if (this.effectWatcher !== null) {
         clearTimeout(this.effectWatcher);
         this.effectWatcher = null;
         this.effectExecute = false;
       }
-      if (this.moveWatcher != null) {
+      if (this.moveWatcher !== null) {
         clearTimeout(this.moveWatcher);
         this.moveWatcher = null;
         this.moveExecute = false;
       }
       this.overlayUnits = null;
-      if (this.reloadWatcher != null) {
+      if (this.reloadWatcher !== null) {
         clearTimeout(this.reloadWatcher);
         this.reloadWatcher = null;
       }
@@ -832,21 +829,21 @@ if (typeof (window['adingoFluct']) == 'undefined') {
     },
 
     /**
-     * 
+     * グループ情報をセットする
      * @param el
      */
-    setGroup : function(el) {
+    setGroup : function (el) {
       var params = this.util.parse_param(el);
       this.data[params['G']] = params;
       this.data[params['G']]['load_status'] = AdingoFluct.LOAD_NONE;
     },
 
     /**
-     * 
+     * jsonpのコールバック
      * @param json
      */
-    callback : function(json) {
-      if (json['status'] == 'success') {
+    callback : function (json) {
+      if (json['status'] === 'success') {
         this.util.deleteById('fluctAdLoader_' + json['G']);
         var s_group_data = this.data[json['G']];
         s_group_data['load_status'] = AdingoFluct.LOADED;
@@ -863,7 +860,7 @@ if (typeof (window['adingoFluct']) == 'undefined') {
           }
           while (temp_queue.length > 0) {
             var rest = temp_queue.shift();
-            if (rest != null) {
+            if (rest !== null) {
               this.showAd(rest);
             }
           }
@@ -872,10 +869,10 @@ if (typeof (window['adingoFluct']) == 'undefined') {
 
       var gcount = 0;
       var loadedcount = 0;
-      for ( var g in this.data) {
+      for (var g in this.data) {
         gcount = gcount + 1;
         var ginfo = this.data[g];
-        if (ginfo['load_status'] == AdingoFluct.LOADED) {
+        if (ginfo['load_status'] === AdingoFluct.LOADED) {
           loadedcount = loadedcount + 1;
         }
       }
@@ -884,35 +881,48 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       }
     },
 
-    reloadInvoke : function(gid, unit_id) {
+    /**
+     * リロードを起動する
+     * @param gid
+     * @param unit_id
+     */
+    reloadInvoke : function (gid, unit_id) {
       var group_info = this.data[gid];
       
       var rate = this.util.hv(group_info, 'rate');
       
-      if( rate == null || parseInt(rate) <= 0){
+      if (rate === null || parseInt(rate, 10) <= 0) {
         rate = 60; //default refresh rate (seconds)
       }
-      this.reloadWatcher = setTimeout(function() {
+      this.reloadWatcher = setTimeout(function () {
         window['adingoFluct'].reload(gid, unit_id);
       }, rate * 1000);
     },
 
-    reload : function(gid, unit_id) {
-      if (this.reloadWatcher != null) {
+    /**
+     * jsonをリロードする
+     * @param gid
+     * @param unit_id
+     */
+    reload : function (gid, unit_id) {
+      if (this.reloadWatcher !== null) {
         clearTimeout(this.reloadWatcher);
         this.reloadWatcher = null;
       }
-
       var g_data = this.data[gid];
       g_data['load_status'] = AdingoFluct.NONE;
       this.render_queue.push(unit_id);
       this.load(gid);
     },
 
-    load : function(gid) {
+    /**
+     * jsonをロードする
+     * @param gid
+     */
+    load : function (gid) {
       var url = null;
       var g_data = this.data[gid];
-      if (typeof (g_data['url']) != 'undefined') {
+      if (typeof (g_data['url']) !== 'undefined') {
         url = g_data['url']; // from query parameter
       } else {
         url = AdingoFluct.URL;
@@ -925,7 +935,11 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       tag = null;
     },
 
-    showAd : function(unit_id) {
+    /**
+     * アドを表示するためのインターフェース
+     * @param unit_id
+     */
+    showAd : function (unit_id) {
       var target_ad = null;
       if (this.rendered_units.indexOf(unit_id) !== -1) {
         return;
@@ -936,15 +950,14 @@ if (typeof (window['adingoFluct']) == 'undefined') {
         unit_div.setAttribute('id', 'adingoFluctUnit_' + unit_id);
         this.util.insertAfter(this.util.myTag(window.document), unit_div);
       }
-      for ( var group_id in this.data) {
+      for (var group_id in this.data) {
         var temp_group_info = this.data[group_id];
         if (typeof (temp_group_info['load_status']) !== 'undefined'
             && temp_group_info['load_status'] === AdingoFluct.LOADED) {
-          for ( var ad_counter = 0; ad_counter < temp_group_info['json']['num']; ad_counter++) {
-            var temp_ad = temp_group_info['json']['ads'][ad_counter];
-            if (temp_ad['unit_id'] == unit_id) {
+          for (var i = 0; i < temp_group_info['json']['num']; i += 1) {
+            var temp_ad = temp_group_info['json']['ads'][i];
+            if (String(temp_ad['unit_id']) === unit_id) {
               target_ad = [ group_id, temp_ad ];
-              temp_ad = null;
               break;
             }
           }
@@ -964,8 +977,11 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       }
     },
 
-    out : function(adData) {
-
+    /**
+     * アドを実際に表示する
+     * @param adData
+     */
+    out : function (adData) {
       var gid = adData.shift();
       var adinfo = adData.shift();
       var unit_div_id = 'adingoFluctUnit_' + adinfo['unit_id'];
@@ -974,11 +990,11 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       var insertAdId = null;
       if (adinfo['overlay'] === 1) {
         insertAdId = this.util.overlay(adinfo);
-        this.moveWatcher = setTimeout(function() {
+        this.moveWatcher = setTimeout(function () {
           window['adingoFluct'].move(insertAdId);
         }, 100);
       }
-      else{
+      else {
         insertAdId = unit_div_id;
       }
       switch (adinfo['creative_type']) {
@@ -994,48 +1010,57 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       default:
       }
       
-      if(adinfo['overlay'] === 1){
+      if (adinfo['overlay'] === 1) {
         this.visibleOverlay(insertAdId, 500);
-        window.document.addEventListener('touchstart', function(e){window['adingoFluct'].toucheHandler(e);}, true);
+        window.document.addEventListener('touchstart', function (e) {
+          window['adingoFluct'].toucheHandler(e);
+        }, true);
       }
       this.util.unit_beacon(unit_div_id, adinfo);
       
-      if(adinfo['reload'] === 1){
+      if (adinfo['reload'] === 1) {
         this.refreshUnits[gid] = adinfo;
         this.reloadInvoke(gid, adinfo['unit_id']);
       }
       
     },
-    toucheHandler: function(e){
-      if(e.srcElement.offsetParent == null || e.srcElement.offsetParent.className !== 'adingoFluctOverlay'){
-        if(this.effectWatcher !== null){
-          if( this.effectExecute === false ){
+    /**
+     * タッチイベントを監視
+     * @param e
+     */
+    toucheHandler: function (e) {
+      if (e.srcElement.offsetParent === null || e.srcElement.offsetParent.className !== 'adingoFluctOverlay') {
+        if (this.effectWatcher !== null) {
+          if (this.effectExecute === false) {
             clearTimeout(this.effectWatcher);
             this.effectWatcher = null;
           }
-          else{
+          else {
             return;
           }
         }
-        for(var unit_element_id in this.overlayUnits){
+        for (var unit_element_id in this.overlayUnits) {
           this.visibleOverlay(unit_element_id, 1000);
         }
       }
     },
-    visibleOverlay : function(id, wait) {
+    /**
+     * オーバレイ枠を可視化
+     * @param id
+     * @param wait
+     */
+    visibleOverlay : function (id, wait) {
       this.effectExecute = false;
       var target = this.util.byId(id);
       target.style.display = 'block';
-      var lpos = this.util.lposXY(parseInt(target.style.width),
-          parseInt(target.style.height));
+      var lpos = this.util.lposXY(parseInt(target.style.width, 10),
+          parseInt(target.style.height, 10));
       var x = Math.max(0, lpos['x']) + 'px';
       var y = lpos['y'] + 'px';
       if (this.util.offsetY() + this.util.wheight() >= this.util.dheight()) {
         y = lpos['top'] + 'px';
       }
       this.util.setOpacity(target, 0);
-      //target.style.opacity = 0;
-      //target.style.filter = "alpha(opacity=" + 0 + ")";
       target.style.top = y;
       target.style.left = x;
       target = null;
@@ -1043,12 +1068,17 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       this.overlayUnits[id]['winPosX'] = this.util.offsetX();
       this.overlayUnits[id]['winPosY'] = this.util.offsetY();
 
-      this.effectWatcher = setTimeout(function() {
+      this.effectWatcher = setTimeout(function () {
         window['adingoFluct'].show(id, 0);
       }, wait);
     },
 
-    show : function(id, effectValue) {
+    /**
+     * 可視化エフェクト
+     * @param id
+     * @param effectValue
+     */
+    show : function (id, effectValue) {
       clearTimeout(this.effectWatcher);
       this.effectWatcher = null;
       var target = this.util.byId(id);
@@ -1056,32 +1086,36 @@ if (typeof (window['adingoFluct']) == 'undefined') {
       this.util.setOpacity(target, effectValue);
       target = null;
       if (effectValue <= 1) {
-        this.effectWatcher = setTimeout(function() {
+        this.effectWatcher = setTimeout(function () {
           window['adingoFluct'].show(id, effectValue);
         }, 24);
       }
     },
 
-    move : function(id) {
+    /**
+     * スクロール監視
+     * @param id
+     */
+    move : function (id) {
       clearTimeout(this.moveWatcher);
       this.moveWatcher = null;
-      isMove = false;
+      var isMove = false;
 
       var winPosX = this.overlayUnits[id]['winPosX'];
       var winPosY = this.overlayUnits[id]['winPosY'];
-      if (winPosX != this.util.offsetX() || winPosY != this.util.offsetY()) {
+      if (winPosX !== this.util.offsetX() || winPosY !== this.util.offsetY()) {
         isMove = true;
       }
       if (isMove) {
         this.overlayUnits[id]['winPosX'] = winPosX;
         this.overlayUnits[id]['winPosY'] = winPosY;
 
-        if (this.effectWatcher != null) {
+        if (this.effectWatcher !== null) {
           if (this.effectExecute === false) {
             clearTimeout(this.effectWatcher);
             this.effectWatcher = null;
           } else {
-            this.moveWatcher = setTimeout(function() {
+            this.moveWatcher = setTimeout(function () {
               window['adingoFluct'].move(id);
             }, 100);
             return;
@@ -1093,7 +1127,7 @@ if (typeof (window['adingoFluct']) == 'undefined') {
         this.effectExecute = true;
         this.visibleOverlay(id, 500);
       }
-      this.moveWatcher = setTimeout(function() {
+      this.moveWatcher = setTimeout(function () {
         window['adingoFluct'].move(id);
       }, 100);
     }

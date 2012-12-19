@@ -589,7 +589,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
      * @returns {String}
      */
     unicodeDecoder : function (str) {
-      var arrs = str.match(/\\u[0-9a-FA-F]{4}/g);
+      var arrs = str.match(/\\u[0-9a-fA-F]{4}/g);
       var t = "";
       if (arrs === null) {
         return '';
