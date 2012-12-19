@@ -1,4 +1,4 @@
-/*jslint noarg: false, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
+/*jslint forin: true, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 
 /*global window escape*/
 if (typeof (window['AdingoFluctCommon']) === 'undefined') {
@@ -589,7 +589,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
      * @returns {String}
      */
     unicodeDecoder : function (str) {
-      var arrs = str.match(/\\u.{4}/g);
+      var arrs = str.match(/\\u[0-9a-FA-F]{4}/g);
       var t = "";
       if (arrs === null) {
         return '';
@@ -678,7 +678,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
      * @returns
      */
     hv: function (hash, key) {
-      if (typeof(hash[key]) === 'undefined'){
+      if (typeof(hash[key]) === 'undefined') {
         return null;
       }
       return hash[key];
@@ -691,21 +691,18 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
      * @returns
      */
     unit: function (target, search_id) {
-      for (var group_id in target){
+      for (var group_id in target) {
         var group = target[group_id];
         
-        for (var i = 0; i < group['json']['num']; i += 1){
+        for (var i = 0; i < group['json']['num']; i += 1) {
           var ad = group['json']['ads'][i];
-          if( ad['unit_id'] === unit_id ){
+          if (ad['unit_id'] === search_id) {
             return ad;
           }
         }
       }
       return null;
     }
-    
-    
-    
   };
   window['AdingoFluctCommon'] = AdingoFluctCommon;
 }
