@@ -2,92 +2,94 @@
 /*jslint forin: true, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 
 /*global window escape*/
-if (typeof (window['AdingoFluctCommon']) === 'undefined') {
-  // for IE6
-  if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function (elt /* , from */) {
-      var len = this.length;
+// for IE6
+if (!Array.prototype.indexOf) {
+  Array.prototype.indexOf = function (elt /* , from */) {
+    var len = this.length;
 
-      var from = Number(arguments[1]) || 0;
-      from = (from < 0) ? Math.ceil(from) : Math.floor(from);
-      if (from < 0) {
-        from += len;
+    var from = Number(arguments[1]) || 0;
+    from = (from < 0) ? Math.ceil(from) : Math.floor(from);
+    if (from < 0) {
+      from += len;
+    }
+    for (; from < len; from += 1) {
+      if (from in this && this[from] === elt) {
+        return from;
       }
-      for (; from < len; from += 1) {
-        if (from in this && this[from] === elt) {
-          return from;
-        }
-      }
-      return -1;
-    };
-  }
-  var modedoc = /BackCompat/i.test(window.document.compatMode) ? window.document.body
-      : window.document.documentElement;
-
-  var AdingoFluctCommon = function () {
-    /**
-     * swfをレンダリング可能か判定した結果を格納したオブジェクトを保持する
-     * {v: ブラウザのフラッシュプレイヤのバージョン, exist: レンダリング可否, done: 判定済みかどうか, tag_template: swfのレンダリング内容
-     */
-    this.flashInfo = (function () {
-      var rtn = {};
-      rtn['v'] = 0;
-      rtn['exist'] = false;
-      rtn['done'] = false;
-      rtn['tag_template'] = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'
-          + 'codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0"'
-          + 'width="{$sWidth}" height="{$sHeight}" style="border:none;padding:0;margin:0">'
-          + '<param name="movie" value="{$sSrc}">'
-          + '<param name="flashvars" value="{$flashVars}">'
-          + '<param name="allowScriptAccess" value="always">'
-          + '<param name="quality" value="autohigh">'
-          + '<param name="bgcolor" value="#fff">'
-          + '<param name="wmode" value="opaque">'
-          + '<embed src="{$sSrc}"'
-          + 'flashvars="{$flashVars}"'
-          + 'quality="autohigh"'
-          + 'allowscriptaccess="always"'
-          + 'swliveconnect="FALSE"'
-          + 'width="{$sWidth}"'
-          + 'height="{$sHeight}"'
-          + 'wmode="opaque"'
-          + 'type="application/x-shockwave-flash"'
-          + 'pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash">'
-          + '</object>';
-      var func = null;
-      return function () {
-        if (func !== null) {
-          return func();
-        }
-        var userAgent = window.navigator.userAgent.toLowerCase();
-        if (userAgent.indexOf('msie') !== -1) {
-          try {
-            if (typeof new ActiveXObject('ShockwaveFlash.ShockwaveFlash') !== 'undefined') {
-              var flashOCX = new ActiveXObject("ShockwaveFlash.ShockwaveFlash")
-                  .GetVariable("$version");
-              rtn['v'] = parseInt(flashOCX.match(/([0-9]+)/)[0], 10);
-              rtn['exist'] = true;
-            }
-          } catch (e) {
-          }
-        } else {
-          if (typeof navigator.plugins["Shockwave Flash"] !== 'undefined') {
-            rtn['v'] = parseInt(navigator.plugins["Shockwave Flash"].description
-                .match(/\d+\.\d+/), 10);
-            rtn['exist'] = rtn['v'] !== 0 ? true : false;
-          }
-        }
-        rtn['done'] = true;
-        func = function () {
-          return rtn;
-        };
-        return func();
-      };
-    }());
+    }
+    return -1;
   };
+}
+var modedoc = /BackCompat/i.test(window.document.compatMode) ? window.document.body
+    : window.document.documentElement;
 
-  AdingoFluctCommon.prototype = {
+/**
+ * @constructor
+ */
+var AdingoFluctCommon = function () {
+  /**
+   * swfをレンダリング可能か判定した結果を格納したオブジェクトを保持する
+   * {v: ブラウザのフラッシュプレイヤのバージョン, exist: レンダリング可否, done: 判定済みかどうか, tag_template: swfのレンダリング内容
+   * @this {AdingoFluctCommon}
+   */
+  this.flashInfo = (function () {
+    var rtn = {};
+    rtn['v'] = 0;
+    rtn['exist'] = false;
+    rtn['done'] = false;
+    rtn['tag_template'] = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'
+      + 'codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0"'
+      + 'width="{$sWidth}" height="{$sHeight}" style="border:none;padding:0;margin:0">'
+      + '<param name="movie" value="{$sSrc}">'
+      + '<param name="flashvars" value="{$flashVars}">'
+      + '<param name="allowScriptAccess" value="always">'
+      + '<param name="quality" value="autohigh">'
+      + '<param name="bgcolor" value="#fff">'
+      + '<param name="wmode" value="opaque">'
+      + '<embed src="{$sSrc}"'
+      + 'flashvars="{$flashVars}"'
+      + 'quality="autohigh"'
+      + 'allowscriptaccess="always"'
+      + 'swliveconnect="FALSE"'
+      + 'width="{$sWidth}"'
+      + 'height="{$sHeight}"'
+      + 'wmode="opaque"'
+      + 'type="application/x-shockwave-flash"'
+      + 'pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash">'
+      + '</object>';
+    var func = null;
+    return function () {
+      if (func !== null) {
+        return func();
+      }
+      var userAgent = window.navigator.userAgent.toLowerCase();
+      if (userAgent.indexOf('msie') !== -1) {
+        try {
+          if (typeof new ActiveXObject('ShockwaveFlash.ShockwaveFlash') !== 'undefined') {
+            var flashOCX = new ActiveXObject("ShockwaveFlash.ShockwaveFlash")
+            .GetVariable("$version");
+            rtn['v'] = parseInt(flashOCX.match(/([0-9]+)/)[0], 10);
+            rtn['exist'] = true;
+          }
+        } catch (e) {
+        }
+      } else {
+        if (typeof navigator.plugins["Shockwave Flash"] !== 'undefined') {
+          rtn['v'] = parseInt(navigator.plugins["Shockwave Flash"].description
+              .match(/\d+\.\d+/), 10);
+          rtn['exist'] = rtn['v'] !== 0 ? true : false;
+        }
+      }
+      rtn['done'] = true;
+      func = function () {
+        return rtn;
+      };
+      return func();
+    };
+  }());
+};
 
+AdingoFluctCommon.prototype = {
     /**
      * グローバル座標系のズームを取得
      * @returns
@@ -161,9 +163,9 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
       var gzoom = this.gZoom();
       var tmpy = this.offsetY();
       var x = ((this.offsetX() + this.wwidth() - (width * gzoom * lzoom)) / gzoom)
-          / lzoom / 2;
+      / lzoom / 2;
       var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom)
-          / lzoom;
+      / lzoom;
       var top = tmpy / gzoom / lzoom;
       return {
         "x" : x,
@@ -341,9 +343,9 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
     beacon : function (url) {
       var beacon = window.document.createElement('img');
       beacon.setAttribute('src', url);
-      
+
       beacon.setAttribute('style',
-          'display:none;position:absolute;border:none;padding:0;margin:0;vertical-align:top;');
+      'display:none;position:absolute;border:none;padding:0;margin:0;vertical-align:top;');
       beacon.setAttribute('width', 0);
       beacon.setAttribute('height', 0);
       beacon.setAttribute('border', 0);
@@ -411,15 +413,15 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
 
       temp.setAttribute('id', id);
       temp
-          .setAttribute(
-              'style',
-              'width:'
-                  + w
-                  + ';height:'
-                  + h
-                  + ';border:none;padding:0;margin:0;margin-bottom:'
-                  + adjBottom
-                  + ';pointer-events:auto;');
+      .setAttribute(
+          'style',
+          'width:'
+          + w
+          + ';height:'
+          + h
+          + ';border:none;padding:0;margin:0;margin-bottom:'
+          + adjBottom
+          + ';pointer-events:auto;');
       temp.setAttribute('marginwidth', 0);
       temp.setAttribute('marginheight', 0);
       temp.setAttribute('allowtransparency', 'false');
@@ -505,8 +507,8 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
       var iframeDoc = iframe.contentWindow.document;
       iframeDoc.open();
       iframeDoc
-          .write('<html><head></head><body style="padding:0px;margin:0px;border:none;">'
-              + ad['html'] + '</body></html>');
+      .write('<html><head></head><body style="padding:0px;margin:0px;border:none;">'
+          + ad['html'] + '</body></html>');
       iframeDoc.close();
       iframeDoc = null;
       iframe = null;
@@ -553,7 +555,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
       var div = this.byId(id);
       if (flashInfo['exist'] && flashInfo['v'] > 5) {
         var flashVars = 'clickTAG=' + escape(ad['landing_url']) + '&targetTAG='
-            + this.openTarget(ad['open']);
+        + this.openTarget(ad['open']);
         var objStr = flashInfo['tag_template'].replace(/\{\$sWidth\}/g,
             ad['width']);
         objStr = objStr.replace(/\{\$sHeight\}/g, ad['height']);
@@ -634,13 +636,13 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
       over.setAttribute('id', 'adingoFluctOverlay_' + ad['unit_id']);
       over.setAttribute('class', 'adingoFluctOverlay');
       over
-          .setAttribute(
-              'style',
-              'width:'
-                  + w
-                  + ';height:'
-                  + h
-                  + ';bottom:0px;left:0px;position:absolute;z-index:9993;display:none;font-size:18px;line-height:1.5em;visibility:visible;opacity:0;verticalAlign:middle;padding:0px;margin:0px;border:none;overflow: hidden;');
+      .setAttribute(
+          'style',
+          'width:'
+          + w
+          + ';height:'
+          + h
+          + ';bottom:0px;left:0px;position:absolute;z-index:9993;display:none;font-size:18px;line-height:1.5em;visibility:visible;opacity:0;verticalAlign:middle;padding:0px;margin:0px;border:none;overflow: hidden;');
       div.appendChild(over);
       div = null;
       over = null;
@@ -688,7 +690,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
       }
       return hash[key];
     },
-    
+
     /**
      * ユニットの広告情報を取得
      * @param target
@@ -698,7 +700,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
     unit: function (target, search_id) {
       for (var group_id in target) {
         var group = target[group_id];
-        
+
         for (var i = 0; i < group['json']['num']; i += 1) {
           var ad = group['json']['ads'][i];
           if (ad['unit_id'] === search_id) {
@@ -708,7 +710,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
       }
       return null;
     },
-    
+
     addHandler: function (target, name, func, flg) {
       if (typeof(target.addEventListener) !== 'undefined') {
         target.addEventListener(name, func, flg);
@@ -717,7 +719,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
         target.attachEvent('on' + name, func);
       }
     },
-    
+
     removeHandler: function (target, name, func, flg) {
       if (typeof (target.removeEventListener) !== 'undefined') {
         target.removeEventListener(name, func, flg);
@@ -726,82 +728,79 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
       }
     }
   };
-  window['AdingoFluctCommon'] = AdingoFluctCommon;
-}
 
 /*jslint plusplus: true, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 /*global window escape */
+var AdingoFluctSync = function () {};
 
-if (typeof (window['adingoFluctSync']) === 'undefined') {
-  var AdingoFluctSync = function () {};
+/**
+ * logly 用 cookie sync tag 生成
+ */
+AdingoFluctSync['logly'] = function (util, logyid) {
+  var ref = '', url = window.document.referrer;
+  try {
+    ref = window.parent.document.referrer;
+  } catch (e1) {
+  }
+  try {
+    url = window.parent.document.URL;
+  } catch (e2) {
+  }
+  var _lgy_ssp_id = 1;
+  var _lgy_ssp_audience_id = '$luid';
+  var _lgy_query = 'sid=' + _lgy_ssp_id + '&aid=' + _lgy_ssp_audience_id +
+  '&url=' + escape(url) + '&rurl=' + escape(ref);
+  var src = (('https:' === window.document.location.protocol) ? 'https://'
+      : 'http://') +
+      'dsp.logly.co.jp/sg.gif?' + _lgy_query;
+  return util.beacon(src);
+};
 
-  /**
-   * logly 用 cookie sync tag 生成
-   */
-  AdingoFluctSync['logly'] = function (util, logyid) {
-    var ref = '', url = window.document.referrer;
-    try {
-      ref = window.parent.document.referrer;
-    } catch (e1) {
+/**
+ * scaleout 用 cookie sync tag 生成
+ */
+AdingoFluctSync['scaleout'] = function (util) {
+  var so_tp = encodeURIComponent(window.document.location.href);
+  var so_pp = encodeURIComponent(window.document.referrer);
+  var so_src = 'http://bid.socdm.com/rtb/sync?proto=adingo&sspid=adingo' +
+  '&tp=' + so_tp + '&pp=' + so_pp + "&t=.gif";
+  return util.beacon(so_src);
+};
+
+/**
+ * freakout 用 cookie sync tag 生成
+ */
+AdingoFluctSync['fout'] = function (util) {
+  return util.beacon('http://sync.fout.jp/sync?xid=fluct');
+};
+
+/**
+ * response jsonのsyncsの内容に従って、cookie sync tag をレンダリングする
+ * @param util ユーティリティーオブジェクト
+ * @param target レンダリングの基準となるelement
+ * @param syncs response json のsyncs
+ */
+AdingoFluctSync.render = function (util, target, syncs) {
+  for (var sync in syncs) {
+    if (sync === 'logly') {
+      target.parentNode.insertBefore(AdingoFluctSync[sync](util, syncs[sync]), target);
+    } else {
+      target.parentNode.insertBefore(AdingoFluctSync[sync](util), target);
     }
-    try {
-      url = window.parent.document.URL;
-    } catch (e2) {
-    }
-    var _lgy_ssp_id = 1;
-    var _lgy_ssp_audience_id = '$luid';
-    var _lgy_query = 'sid=' + _lgy_ssp_id + '&aid=' + _lgy_ssp_audience_id +
-    '&url=' + escape(url) + '&rurl=' + escape(ref);
-    var src = (('https:' === window.document.location.protocol) ? 'https://'
-        : 'http://') +
-        'dsp.logly.co.jp/sg.gif?' + _lgy_query;
-    return util.beacon(src);
-  };
-
-  /**
-   * scaleout 用 cookie sync tag 生成
-   */
-  AdingoFluctSync['scaleout'] = function (util) {
-    var so_tp = encodeURIComponent(window.document.location.href);
-    var so_pp = encodeURIComponent(window.document.referrer);
-    var so_src = 'http://bid.socdm.com/rtb/sync?proto=adingo&sspid=adingo' +
-    '&tp=' + so_tp + '&pp=' + so_pp + "&t=.gif";
-    return util.beacon(so_src);
-  };
-  
-  /**
-   * freakout 用 cookie sync tag 生成
-   */
-  AdingoFluctSync['fout'] = function (util) {
-    return util.beacon('http://sync.fout.jp/sync?xid=fluct');
-  };
-
-  /**
-   * response jsonのsyncsの内容に従って、cookie sync tag をレンダリングする
-   * @param util ユーティリティーオブジェクト
-   * @param target レンダリングの基準となるelement
-   * @param syncs response json のsyncs
-   */
-  AdingoFluctSync.render = function (util, target, syncs) {
-    for (var sync in syncs) {
-      if (sync === 'logly') {
-        target.parentNode.insertBefore(AdingoFluctSync[sync](util, syncs[sync]), target);
-      } else {
-        target.parentNode.insertBefore(AdingoFluctSync[sync](util), target);
-      }
-    }
-  };
-  window["adingoFluctSync"] = AdingoFluctSync;
-}
+  }
+};
 
 /*jslint debug: false, forin: true, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 
-/*global window AdingoFluctCommon adingoFluctSync*/
+/*global window AdingoFluctCommon AdingoFluctSync*/
 /**
  * @depends ../../common/1.js
  * @depends ../../cookie_sync/1.js
  */
 if (typeof (window['adingoFluct']) === 'undefined') {
+  /**
+   * @constructor
+   */
   var AdingoFluct = function () {
     this.util = new AdingoFluctCommon();
     this.data = {};
@@ -876,7 +875,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
         if (temp_queue.length > 0) {
           if (this.synced === false) {
             var unit_id = temp_queue.shift();
-            adingoFluctSync.render(this.util, this.util.byId('adingoFluctUnit_'
+            AdingoFluctSync.render(this.util, this.util.byId('adingoFluctUnit_'
                 + unit_id), json['syncs']);
             this.showAd(unit_id);
             this.synced = true;

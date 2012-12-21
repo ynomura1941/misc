@@ -1,11 +1,14 @@
 /*jslint debug: false, forin: true, laxbreak: true, indent: 2, sub: true, windows: true, browser: true, vars: false, white: true, onevar: false, undef: true, nomen: false, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: false*/
 
-/*global window AdingoFluctCommon adingoFluctSync*/
+/*global window AdingoFluctCommon AdingoFluctSync*/
 /**
  * @depends ../../common/1.js
  * @depends ../../cookie_sync/1.js
  */
 if (typeof (window['adingoFluct']) === 'undefined') {
+  /**
+   * @constructor
+   */
   var AdingoFluct = function () {
     this.util = new AdingoFluctCommon();
     this.data = {};
@@ -80,7 +83,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
         if (temp_queue.length > 0) {
           if (this.synced === false) {
             var unit_id = temp_queue.shift();
-            adingoFluctSync.render(this.util, this.util.byId('adingoFluctUnit_'
+            AdingoFluctSync.render(this.util, this.util.byId('adingoFluctUnit_'
                 + unit_id), json['syncs']);
             this.showAd(unit_id);
             this.synced = true;
