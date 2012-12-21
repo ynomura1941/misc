@@ -243,10 +243,10 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           this.util.addHandler(window.document, 'touchstart', function (e) {
             window['adingoFluct'].touchHandler(e);
           }, true);
-          /*
           this.util.addHandler(window, 'resize', function (e) {
             window['adingoFluct'].touchHandler(e);
           }, true);
+          /*
           this.util.addHandler(window, 'orientationchange', function (e) {
             window['adingoFluct'].touchHandler(e);
           }, true);
