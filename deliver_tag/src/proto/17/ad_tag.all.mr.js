@@ -404,6 +404,11 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
     iframe : function (id, ad) {
       var w = ad['width'] + 'px', h = ad['height'] + 'px';
       var temp = this.create_element('iframe');
+      var adjBottom = '0px';
+      if (this.util.hv(ad, 'overlay') === 1) {
+        adjBottom = '-4px';
+      }
+
       temp.setAttribute('id', id);
       temp
           .setAttribute(
@@ -412,7 +417,9 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
                   + w
                   + ';height:'
                   + h
-                  + ';border:none;padding:0;margin:0;margin-bottom:-4px;pointer-events:auto;');
+                  + ';border:none;padding:0;margin:0;margin-bottom:'
+                  + adjBottom
+                  + ';pointer-events:auto;');
       temp.setAttribute('marginwidth', 0);
       temp.setAttribute('marginheight', 0);
       temp.setAttribute('allowtransparency', 'false');
@@ -483,9 +490,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
       div = null;
       beacon = null;
       return true;
-    }
-
-    ,
+    },
 
     /**
      * htmlクリエイティブを生成
@@ -496,7 +501,6 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
     html_ad : function (id, ad) {
       var div = this.byId(id);
       var iframe = this.iframe('adingoFluctIframe_' + ad['unit_id'], ad);
-
       div.appendChild(iframe);
       var iframeDoc = iframe.contentWindow.document;
       iframeDoc.open();
@@ -703,6 +707,23 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
         }
       }
       return null;
+    },
+    
+    addHandler: function (target, name, func, flg) {
+      if (typeof(target.addEventListener) !== 'undefined') {
+        target.addEventListener(name, func, flg);
+      }
+      else if (typeof(target.attachEvent) !== 'undefined') {
+        target.attachEvent('on' + name, func);
+      }
+    },
+    
+    removeHandler: function (target, name, func, flg) {
+      if (typeof (target.removeEventListener) !== 'undefined') {
+        target.removeEventListener(name, func, flg);
+      } else if (typeof(target.detachEvent) !== 'undefined') {
+        target.detachEvent('on' + name, func);
+      }
     }
   };
   window['AdingoFluctCommon'] = AdingoFluctCommon;
@@ -794,6 +815,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
     this.reloadWatcher = null;
     this.synced = false;
     this.refreshUnits = {}; //{groupId => unit_data}
+    this.addedHandler = false;
   };
   AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
   AdingoFluct.LOAD_NONE = 0;
@@ -1013,9 +1035,13 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       
       if (adinfo['overlay'] === 1) {
         this.visibleOverlay(insertAdId, 500);
-        window.document.addEventListener('touchstart', function (e) {
-          window['adingoFluct'].toucheHandler(e);
-        }, true);
+        if (this.addedHandler === false) {
+          this.util.addHandler(window.document, 'touchstart', function (e) {
+            window['adingoFluct'].touchHandler(e);}, true);
+          this.util.addHandler(window.document, 'resize', function (e) {
+            window['adingoFluct'].resizeHandler(e);}, true);
+          this.addedHandler = true;
+        }
       }
       this.util.unit_beacon(unit_div_id, adinfo);
       
@@ -1029,7 +1055,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      * タッチイベントを監視
      * @param e
      */
-    toucheHandler: function (e) {
+    touchHandler: function (e) {
       if (e.srcElement.offsetParent === null || e.srcElement.offsetParent.className !== 'adingoFluctOverlay') {
         if (this.effectWatcher !== null) {
           if (this.effectExecute === false) {
@@ -1037,12 +1063,25 @@ if (typeof (window['adingoFluct']) === 'undefined') {
             this.effectWatcher = null;
           }
           else {
-            return;
+            clearTimeout(this.effectWatcher);
+            this.effectWatcher = null;
+            this.effectExecute = false;
+            
           }
         }
         for (var unit_element_id in this.overlayUnits) {
           this.visibleOverlay(unit_element_id, 1000);
         }
+      }
+    },
+    
+    /**
+     * リサイズイベント処理
+     * @param e
+     */
+    resizeHandler: function (e) {
+      for (var unit_element_id in this.overlayUnits) {
+        this.visibleOverlay(unit_element_id, 1000);
       }
     },
     /**
@@ -1068,7 +1107,6 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       this.overlayUnits[id] = {};
       this.overlayUnits[id]['winPosX'] = this.util.offsetX();
       this.overlayUnits[id]['winPosY'] = this.util.offsetY();
-
       this.effectWatcher = setTimeout(function () {
         window['adingoFluct'].show(id, 0);
       }, wait);
@@ -1098,18 +1136,18 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      * @param id
      */
     move : function (id) {
-      clearTimeout(this.moveWatcher);
-      this.moveWatcher = null;
       var isMove = false;
 
       var winPosX = this.overlayUnits[id]['winPosX'];
       var winPosY = this.overlayUnits[id]['winPosY'];
       if (winPosX !== this.util.offsetX() || winPosY !== this.util.offsetY()) {
         isMove = true;
+        
       }
       if (isMove) {
-        this.overlayUnits[id]['winPosX'] = winPosX;
-        this.overlayUnits[id]['winPosY'] = winPosY;
+        this.util.setOpacity(this.util.byId(id), 0);
+        this.overlayUnits[id]['winPosX'] = this.util.offsetX();
+        this.overlayUnits[id]['winPosY'] = this.util.offsetY();
 
         if (this.effectWatcher !== null) {
           if (this.effectExecute === false) {
@@ -1120,14 +1158,20 @@ if (typeof (window['adingoFluct']) === 'undefined') {
               window['adingoFluct'].move(id);
             }, 100);
             return;
+//            clearTimeout(this.effectWatcher);
+//            this.effectWatcher = null;
+//            this.effectExecute = false;
+            
           }
         } else {
-          var target = this.util.byId(id);
-          this.util.setOpacity(target, 0);
+//          var target = this.util.byId(id);
+//          this.util.setOpacity(target, 0);
         }
-        this.effectExecute = true;
         this.visibleOverlay(id, 500);
       }
+      clearTimeout(this.moveWatcher);
+      this.moveWatcher = null;
+
       this.moveWatcher = setTimeout(function () {
         window['adingoFluct'].move(id);
       }, 100);
@@ -1137,6 +1181,8 @@ if (typeof (window['adingoFluct']) === 'undefined') {
   AdingoFluct.prototype['showAd'] = AdingoFluct.prototype.showAd;
   AdingoFluct.prototype['callback'] = AdingoFluct.prototype.callback;
   AdingoFluct.prototype['setGroup'] = AdingoFluct.prototype.setGroup;
+  AdingoFluct.prototype['touchHandler'] = AdingoFluct.prototype.touchHandler;
+  AdingoFluct.prototype['resizeHandler'] = AdingoFluct.prototype.resizeHandler;
   window['adingoFluct'] = new AdingoFluct();
 }
 window['adingoFluct'].setGroup(window.document);

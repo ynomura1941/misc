@@ -403,6 +403,11 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
     iframe : function (id, ad) {
       var w = ad['width'] + 'px', h = ad['height'] + 'px';
       var temp = this.create_element('iframe');
+      var adjBottom = '0px';
+      if (this.util.hv(ad, 'overlay') === 1) {
+        adjBottom = '-4px';
+      }
+
       temp.setAttribute('id', id);
       temp
           .setAttribute(
@@ -411,7 +416,9 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
                   + w
                   + ';height:'
                   + h
-                  + ';border:none;padding:0;margin:0;margin-bottom:-4px;pointer-events:auto;');
+                  + ';border:none;padding:0;margin:0;margin-bottom:'
+                  + adjBottom
+                  + ';pointer-events:auto;');
       temp.setAttribute('marginwidth', 0);
       temp.setAttribute('marginheight', 0);
       temp.setAttribute('allowtransparency', 'false');
@@ -482,9 +489,7 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
       div = null;
       beacon = null;
       return true;
-    }
-
-    ,
+    },
 
     /**
      * htmlクリエイティブを生成
@@ -495,7 +500,6 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
     html_ad : function (id, ad) {
       var div = this.byId(id);
       var iframe = this.iframe('adingoFluctIframe_' + ad['unit_id'], ad);
-
       div.appendChild(iframe);
       var iframeDoc = iframe.contentWindow.document;
       iframeDoc.open();
@@ -702,6 +706,23 @@ if (typeof (window['AdingoFluctCommon']) === 'undefined') {
         }
       }
       return null;
+    },
+    
+    addHandler: function (target, name, func, flg) {
+      if (typeof(target.addEventListener) !== 'undefined') {
+        target.addEventListener(name, func, flg);
+      }
+      else if (typeof(target.attachEvent) !== 'undefined') {
+        target.attachEvent('on' + name, func);
+      }
+    },
+    
+    removeHandler: function (target, name, func, flg) {
+      if (typeof (target.removeEventListener) !== 'undefined') {
+        target.removeEventListener(name, func, flg);
+      } else if (typeof(target.detachEvent) !== 'undefined') {
+        target.detachEvent('on' + name, func);
+      }
     }
   };
   window['AdingoFluctCommon'] = AdingoFluctCommon;

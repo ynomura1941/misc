@@ -19,6 +19,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
     this.reloadWatcher = null;
     this.synced = false;
     this.refreshUnits = {}; //{groupId => unit_data}
+    this.addedHandler = false;
   };
   AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
   AdingoFluct.LOAD_NONE = 0;
@@ -238,9 +239,13 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       
       if (adinfo['overlay'] === 1) {
         this.visibleOverlay(insertAdId, 500);
-        window.document.addEventListener('touchstart', function (e) {
-          window['adingoFluct'].toucheHandler(e);
-        }, true);
+        if (this.addedHandler === false) {
+          this.util.addHandler(window.document, 'touchstart', function (e) {
+            window['adingoFluct'].touchHandler(e);}, true);
+          this.util.addHandler(window.document, 'resize', function (e) {
+            window['adingoFluct'].resizeHandler(e);}, true);
+          this.addedHandler = true;
+        }
       }
       this.util.unit_beacon(unit_div_id, adinfo);
       
@@ -254,7 +259,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      * タッチイベントを監視
      * @param e
      */
-    toucheHandler: function (e) {
+    touchHandler: function (e) {
       if (e.srcElement.offsetParent === null || e.srcElement.offsetParent.className !== 'adingoFluctOverlay') {
         if (this.effectWatcher !== null) {
           if (this.effectExecute === false) {
@@ -262,12 +267,25 @@ if (typeof (window['adingoFluct']) === 'undefined') {
             this.effectWatcher = null;
           }
           else {
-            return;
+            clearTimeout(this.effectWatcher);
+            this.effectWatcher = null;
+            this.effectExecute = false;
+            
           }
         }
         for (var unit_element_id in this.overlayUnits) {
           this.visibleOverlay(unit_element_id, 1000);
         }
+      }
+    },
+    
+    /**
+     * リサイズイベント処理
+     * @param e
+     */
+    resizeHandler: function (e) {
+      for (var unit_element_id in this.overlayUnits) {
+        this.visibleOverlay(unit_element_id, 1000);
       }
     },
     /**
@@ -293,7 +311,6 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       this.overlayUnits[id] = {};
       this.overlayUnits[id]['winPosX'] = this.util.offsetX();
       this.overlayUnits[id]['winPosY'] = this.util.offsetY();
-
       this.effectWatcher = setTimeout(function () {
         window['adingoFluct'].show(id, 0);
       }, wait);
@@ -323,18 +340,18 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      * @param id
      */
     move : function (id) {
-      clearTimeout(this.moveWatcher);
-      this.moveWatcher = null;
       var isMove = false;
 
       var winPosX = this.overlayUnits[id]['winPosX'];
       var winPosY = this.overlayUnits[id]['winPosY'];
       if (winPosX !== this.util.offsetX() || winPosY !== this.util.offsetY()) {
         isMove = true;
+        
       }
       if (isMove) {
-        this.overlayUnits[id]['winPosX'] = winPosX;
-        this.overlayUnits[id]['winPosY'] = winPosY;
+        this.util.setOpacity(this.util.byId(id), 0);
+        this.overlayUnits[id]['winPosX'] = this.util.offsetX();
+        this.overlayUnits[id]['winPosY'] = this.util.offsetY();
 
         if (this.effectWatcher !== null) {
           if (this.effectExecute === false) {
@@ -345,14 +362,20 @@ if (typeof (window['adingoFluct']) === 'undefined') {
               window['adingoFluct'].move(id);
             }, 100);
             return;
+//            clearTimeout(this.effectWatcher);
+//            this.effectWatcher = null;
+//            this.effectExecute = false;
+            
           }
         } else {
-          var target = this.util.byId(id);
-          this.util.setOpacity(target, 0);
+//          var target = this.util.byId(id);
+//          this.util.setOpacity(target, 0);
         }
-        this.effectExecute = true;
         this.visibleOverlay(id, 500);
       }
+      clearTimeout(this.moveWatcher);
+      this.moveWatcher = null;
+
       this.moveWatcher = setTimeout(function () {
         window['adingoFluct'].move(id);
       }, 100);
@@ -362,6 +385,8 @@ if (typeof (window['adingoFluct']) === 'undefined') {
   AdingoFluct.prototype['showAd'] = AdingoFluct.prototype.showAd;
   AdingoFluct.prototype['callback'] = AdingoFluct.prototype.callback;
   AdingoFluct.prototype['setGroup'] = AdingoFluct.prototype.setGroup;
+  AdingoFluct.prototype['touchHandler'] = AdingoFluct.prototype.touchHandler;
+  AdingoFluct.prototype['resizeHandler'] = AdingoFluct.prototype.resizeHandler;
   window['adingoFluct'] = new AdingoFluct();
 }
 window['adingoFluct'].setGroup(window.document);
