@@ -1036,9 +1036,11 @@ if (typeof (window['adingoFluct']) === 'undefined') {
         this.visibleOverlay(insertAdId, 500);
         if (this.addedHandler === false) {
           this.util.addHandler(window.document, 'touchstart', function (e) {
-            window['adingoFluct'].touchHandler(e);}, true);
+            window['adingoFluct'].touchHandler(e);
+          }, true);
           this.util.addHandler(window.document, 'resize', function (e) {
-            window['adingoFluct'].resizeHandler(e);}, true);
+            window['adingoFluct'].resizeHandler(e);
+          }, true);
           this.addedHandler = true;
         }
       }
@@ -1162,9 +1164,10 @@ if (typeof (window['adingoFluct']) === 'undefined') {
 //            this.effectExecute = false;
             
           }
-        } else {
+//        } else {
 //          var target = this.util.byId(id);
 //          this.util.setOpacity(target, 0);
+//        }
         }
         this.visibleOverlay(id, 500);
       }

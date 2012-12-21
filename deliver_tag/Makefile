@@ -10,10 +10,10 @@ MR=.mr.js
 ifeq (merge,$(CMD))
 MODE=$(MR)
 endif
-ifeq (advanced_force_compress_compile,$(CMD))
+ifeq (afcc,$(CMD))
 MODE=$(AFCC)
 endif
-ifeq (force_compress_compile,$(CMD))
+ifeq (fcc,$(CMD))
 MODE=$(FCC)
 endif
 
@@ -31,10 +31,10 @@ setup: install
 clean:
 	rm -Rf juicer_deps vendor/* .bundle Gemfile.lock bin
 
-advanced_force_compress_compile:
+afcc: 
 	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler --arguments "--compilation_level ADVANCED_OPTIMIZATIONS" -o $(JSBASE)$(AFCC) $(SRC)
 
-force_compress_compile:
+fcc: 
 	env JUICER_HOME=juicer_deps ./bin/juicer merge -f -i -m closure_compiler -o $(JSBASE)$(FCC) $(SRC)
 
 merge: 
