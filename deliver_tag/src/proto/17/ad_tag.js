@@ -220,9 +220,6 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       var insertAdId = null;
       if (adinfo['overlay'] === 1) {
         insertAdId = this.util.overlay(adinfo);
-        this.moveWatcher = setTimeout(function () {
-          window['adingoFluct'].move(insertAdId);
-        }, 100);
       }
       else {
         insertAdId = unit_div_id;
@@ -246,6 +243,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           this.util.addHandler(window.document, 'touchstart', function (e) {
             window['adingoFluct'].touchHandler(e);
           }, true);
+          /*
           this.util.addHandler(window, 'resize', function (e) {
             window['adingoFluct'].touchHandler(e);
           }, true);
@@ -255,24 +253,26 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           this.util.addHandler(window.document, 'touchmove', function (e) {
             window['adingoFluct'].touchHandler(e);
           }, true);
-
+          */
+          this.moveWatcher = setTimeout(function () {
+            window['adingoFluct'].move(insertAdId);
+          }, 100);
           this.addedHandler = true;
         }
       }
       this.util.unit_beacon(unit_div_id, adinfo);
-      
-      if (adinfo['reload'] === 1) {
+      if (this.util.hv(adinfo, 'reload') === 1) {
         this.refreshUnits[gid] = adinfo;
         this.reloadInvoke(gid, adinfo['unit_id']);
       }
-      
     },
     /**
      * タッチイベントを監視
      * @param e
      */
     touchHandler: function (e) {
-      if (e.srcElement.offsetParent === null || e.srcElement.offsetParent.className !== 'adingoFluctOverlay') {
+      console.log(e);
+      if (e.srcElement.offsetParent === null || typeof(e.srcElement.offsetParent) === 'undefined' || typeof(e.srcElement.offsetParent.className) === 'undefined' || e.srcElement.offsetParent.className !== 'adingoFluctOverlay') {
         if (this.effectWatcher !== null) {
           if (this.effectExecute === false) {
             clearTimeout(this.effectWatcher);
@@ -306,6 +306,9 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      * @param wait
      */
     visibleOverlay : function (id, wait) {
+      this.overlayUnits[id] = {};
+      this.overlayUnits[id]['winPosX'] = this.util.offsetX();
+      this.overlayUnits[id]['winPosY'] = this.util.offsetY();
       if (this.effectExecute) {
         return;
       }
@@ -319,10 +322,11 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           parseInt(target.style.height, 10));
       var x = Math.max(0, lpos['x']) + 'px';
       var y = lpos['y'] + 'px';
-      if (this.util.offsetY() + this.util.wheight() >= this.util.dheight()) {
+      if (this.util.offsetY() > 0 && this.util.offsetY() + this.util.wheight() >= this.util.dheight()) {
         y = lpos['top'] + 'px';
       }
       target.style.zoom = lpos['zoom'];
+      
       this.util.setOpacity(target, 0);
       target.style.top = y;
       target.style.left = x;
@@ -363,6 +367,14 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      */
     move : function (id) {
       var isMove = false;
+      if (this.util.hv(this.overlayUnits, id) === null) {
+        clearTimeout(this.moveWatcher);
+        this.moveWatcher = null;
+        this.moveWatcher = setTimeout(function () {
+          window['adingoFluct'].move(id);
+        }, 100);
+        return;
+      }
       var winPosX = this.overlayUnits[id]['winPosX'];
       var winPosY = this.overlayUnits[id]['winPosY'];
       if (winPosX !== this.util.offsetX() || winPosY !== this.util.offsetY()) {

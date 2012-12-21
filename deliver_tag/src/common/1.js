@@ -110,9 +110,9 @@ AdingoFluctCommon.prototype = {
         return baseWidth * modedoc.style.zoom;
       }
       else {
-        if (this.dwidth() < baseWidth) {
-          if (this.wwidth() <= this.dwidth()) {
-            return (this.wwidth() / baseWidth);
+        if (this.wwidth() > this.dwidth()) {
+          if (this.wwidth() >= baseWidth) {
+            return this.dwidth() / this.wwidth();
           }
           else {
             return this.dwidth() / baseWidth;
@@ -130,9 +130,9 @@ AdingoFluctCommon.prototype = {
      * @returns {Number} x
      */
     lposX : function (width) {
-      return Math.max(0, ((this.offsetX() + this.wwidth() - (width * this.gZoom() * this
+      return ((this.offsetX() + this.wwidth() - (width * this.gZoom() * this
           .lZoom(width))) / this.gZoom())
-          / this.lZoom(width) / 2);
+          / this.lZoom(width) / 2;
     },
     /**
      * ローカル座標系においてelementがwindowの最下部にくるyをきめる
@@ -159,8 +159,8 @@ AdingoFluctCommon.prototype = {
       var tmpx = this.offsetX();
       var x = ((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
       / lzoom / 2 + tmpx;
-      var y = Math.max(0, ((this.wheight() - (height * gzoom * lzoom)) / gzoom)
-      / lzoom + tmpy);
+      var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom)
+      / lzoom;
       var top = tmpy / gzoom / lzoom;
       return {
         "x" : x,
@@ -261,7 +261,7 @@ AdingoFluctCommon.prototype = {
       return (function () {
         if (func === null) {
           func = function () {
-            return Math.max(modedoc.clientHeight, modedoc.scrollHeight);
+            return Math.max(modedoc.clientWidth, modedoc.scrollWidth);
           };
         }
         return func();
@@ -288,15 +288,15 @@ AdingoFluctCommon.prototype = {
         if (func === null) {
           if (typeof (window.scrollY) !== 'undefined') {
             func = function () {
-              return window.scrollY;
+              return Math.max(0, window.scrollY);
             };
           } else if (typeof (window.pageYOffset) !== 'undefined') {
             func = function () {
-              return window.pageYOffset;
+              return Math.max(0, window.pageYOffset);
             };
           } else {
             func = function () {
-              return modedoc.scrollTop;
+              return Math.max(0, modedoc.scrollTop);
             };
           }
         }
@@ -314,15 +314,15 @@ AdingoFluctCommon.prototype = {
         if (func === null) {
           if (typeof (window.scrollX) !== 'undefined') {
             func = function () {
-              return window.scrollX;
+              return Math.max(0, window.scrollX);
             };
           } else if (typeof (window.pageXOffset) !== 'undefined') {
             func = function () {
-              return window.pageXOffset;
+              return Math.max(0, window.pageXOffset);
             };
           } else {
             func = function () {
-              return modedoc.scrollLeft;
+              return Math.max(0, modedoc.scrollLeft);
             };
           }
         }
@@ -341,7 +341,7 @@ AdingoFluctCommon.prototype = {
       beacon.setAttribute('src', url);
 
       beacon.setAttribute('style',
-      'display:none;position:absolute;border:none;padding:0;margin:0;vertical-align:top;');
+      'display:none;position:absolute;border:none;padding:0;margin:0;');
       beacon.setAttribute('width', 0);
       beacon.setAttribute('height', 0);
       beacon.setAttribute('border', 0);
@@ -524,7 +524,7 @@ AdingoFluctCommon.prototype = {
       temp.setAttribute('width', ad['width']);
       temp.setAttribute('height', ad['height']);
       temp.setAttribute('border', 0);
-      temp.setAttribute('style', 'border:none;padding:0;margin:0;vertical-align:top;');
+      temp.setAttribute('style', 'border:none;padding:0;margin:0;');
       if (ad['alt'].length > 0) {
         temp.setAttribute('alt', this.unicodeDecoder(ad['alt']));
       }
@@ -567,7 +567,7 @@ AdingoFluctCommon.prototype = {
           temp.setAttribute('width', ad['width']);
           temp.setAttribute('height', ad['height']);
           temp.setAttribute('border', 0);
-          temp.setAttribute('style', 'border:none;padding:0;margin:0;vertical-align:top;');
+          temp.setAttribute('style', 'border:none;padding:0;margin:0;');
           if (ad['alt'].length > 0) {
             temp.setAttribute('alt', this.unicodeDecoder(ad['alt']));
           }
