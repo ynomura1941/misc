@@ -155,17 +155,21 @@ AdingoFluctCommon.prototype = {
     lposXY : function (width, height) {
       var lzoom = this.lZoom(width);
       var gzoom = this.gZoom();
-      var tmpy = this.offsetY();
+      var tmpy = Math.max( 0, this.offsetY());
       var tmpx = this.offsetX();
       var x = ((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
       / lzoom / 2 + tmpx;
       var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom)
       / lzoom;
       var top = tmpy / gzoom / lzoom;
+      if (tmpy > 0 && tmpy + this.wheight() >= this.dheight() - 4) {
+        y = top;
+      }
+      
+      
       return {
         "x" : x,
         "y" : y,
-        "top" : top,
         "zoom": lzoom
       };
     },

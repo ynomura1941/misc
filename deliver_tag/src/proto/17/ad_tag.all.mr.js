@@ -156,17 +156,21 @@ AdingoFluctCommon.prototype = {
     lposXY : function (width, height) {
       var lzoom = this.lZoom(width);
       var gzoom = this.gZoom();
-      var tmpy = this.offsetY();
+      var tmpy = Math.max( 0, this.offsetY());
       var tmpx = this.offsetX();
       var x = ((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
       / lzoom / 2 + tmpx;
       var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom)
       / lzoom;
       var top = tmpy / gzoom / lzoom;
+      if (tmpy > 0 && tmpy + this.wheight() >= this.dheight() - 4) {
+        y = top;
+      }
+      
+      
       return {
         "x" : x,
         "y" : y,
-        "top" : top,
         "zoom": lzoom
       };
     },
@@ -1117,9 +1121,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           parseInt(target.style.height, 10));
       var x = Math.max(0, lpos['x']) + 'px';
       var y = lpos['y'] + 'px';
-      if (this.util.offsetY() > 0 && this.util.offsetY() + this.util.wheight() >= this.util.dheight() - 4) {
-        y = lpos['top'] + 'px';
-      }
+
       target.style.zoom = lpos['zoom'];
       
       this.util.setOpacity(target, 0);

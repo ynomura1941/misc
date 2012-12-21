@@ -321,9 +321,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           parseInt(target.style.height, 10));
       var x = Math.max(0, lpos['x']) + 'px';
       var y = lpos['y'] + 'px';
-      if (this.util.offsetY() > 0 && this.util.offsetY() + this.util.wheight() >= this.util.dheight() - 4) {
-        y = lpos['top'] + 'px';
-      }
+
       target.style.zoom = lpos['zoom'];
       
       this.util.setOpacity(target, 0);
