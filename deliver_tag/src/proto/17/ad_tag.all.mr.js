@@ -166,6 +166,9 @@ AdingoFluctCommon.prototype = {
       if (tmpy > 0 && tmpy + this.wheight() >= this.dheight() - 4) {
         y = top;
       }
+      if( this.isAndroid() && window.outerHeight/window.devicePixelRatio > tmpy){
+        y = window.outerHeight/window.devicePixelRatio - ((( (height * gzoom * lzoom)) / gzoom) / lzoom);
+      }
       
       
       return {
@@ -734,6 +737,10 @@ AdingoFluctCommon.prototype = {
         return true;
       }
       return false;
+    },
+    
+    isAndroid: function(){
+      return navigator.userAgent.toLowerCase().indexOf('android', 0) >= 0 ? true : false;
     }
   };
 
