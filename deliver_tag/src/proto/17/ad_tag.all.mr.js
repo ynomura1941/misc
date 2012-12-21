@@ -108,23 +108,18 @@ AdingoFluctCommon.prototype = {
      */
     lZoom : function (baseWidth) {
       if (modedoc.style.zoom !== '') {
+        return baseWidth * modedoc.style.zoom;
+      }
+      else {
         if (this.dwidth() < baseWidth) {
-          if (this.wwidth() <= baseWidth) {
-            return this.dwidth() / baseWidth;
-          } else {
-            return this.dwidth() / this.wwidth();
+          if (this.wwidth() <= this.dwidth()) {
+            return (this.wwidth() / baseWidth);
           }
-        } else {
-          if (this.wwidth() < baseWidth) {
-            return this.wwidth() / baseWidth;
-          } else {
-            return this.wwidth() / this.dwidth();
+          else {
+            return this.dwidth() / baseWidth;
           }
         }
-      } else {
-        if (this.wwidth() < baseWidth) {
-          return (this.wwidth() / baseWidth);
-        } else {
+        else {
           return 1;
         }
       }
@@ -136,9 +131,9 @@ AdingoFluctCommon.prototype = {
      * @returns {Number} x
      */
     lposX : function (width) {
-      return ((this.offsetX() + this.wwidth() - (width * this.gZoom() * this
+      return Math.max(0, ((this.offsetX() + this.wwidth() - (width * this.gZoom() * this
           .lZoom(width))) / this.gZoom())
-          / this.lZoom(width) / 2;
+          / this.lZoom(width) / 2);
     },
     /**
      * ローカル座標系においてelementがwindowの最下部にくるyをきめる
@@ -162,15 +157,17 @@ AdingoFluctCommon.prototype = {
       var lzoom = this.lZoom(width);
       var gzoom = this.gZoom();
       var tmpy = this.offsetY();
-      var x = ((this.offsetX() + this.wwidth() - (width * gzoom * lzoom)) / gzoom)
-      / lzoom / 2;
-      var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom)
-      / lzoom;
+      var tmpx = this.offsetX();
+      var x = ((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
+      / lzoom / 2 + tmpx;
+      var y = Math.max(0, ((this.wheight() - (height * gzoom * lzoom)) / gzoom)
+      / lzoom + tmpy);
       var top = tmpy / gzoom / lzoom;
       return {
         "x" : x,
         "y" : y,
-        "top" : top
+        "top" : top,
+        "zoom": lzoom
       };
     },
 
@@ -1038,9 +1035,21 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           this.util.addHandler(window.document, 'touchstart', function (e) {
             window['adingoFluct'].touchHandler(e);
           }, true);
-          this.util.addHandler(window.document, 'resize', function (e) {
+          this.util.addHandler(window, 'resize', function (e) {
+            window['adingoFluct'].touchHandler(e);
+          }, true);
+          this.util.addHandler(window, 'orientationchange', function (e) {
+            window['adingoFluct'].touchHandler(e);
+          }, true);
+/*
+          this.util.addHandler(window.document, 'touchend', function (e) {
             window['adingoFluct'].resizeHandler(e);
           }, true);
+*/
+          this.util.addHandler(window.document, 'touchmove', function (e) {
+            window['adingoFluct'].touchHandler(e);
+          }, true);
+
           this.addedHandler = true;
         }
       }
@@ -1091,7 +1100,13 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      * @param wait
      */
     visibleOverlay : function (id, wait) {
-      this.effectExecute = false;
+      if (this.effectExecute) {
+        return;
+      }
+      if (this.util.wheight() < this.util.wwidth()) {
+        return;
+      }
+      this.effectExecute = true;
       var target = this.util.byId(id);
       target.style.display = 'block';
       var lpos = this.util.lposXY(parseInt(target.style.width, 10),
@@ -1101,6 +1116,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       if (this.util.offsetY() + this.util.wheight() >= this.util.dheight()) {
         y = lpos['top'] + 'px';
       }
+      target.style.zoom = lpos['zoom'];
       this.util.setOpacity(target, 0);
       target.style.top = y;
       target.style.left = x;
@@ -1130,6 +1146,9 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           window['adingoFluct'].show(id, effectValue);
         }, 24);
       }
+      else {
+        this.effectExecute = false;
+      }
     },
 
     /**
@@ -1138,12 +1157,22 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      */
     move : function (id) {
       var isMove = false;
-
       var winPosX = this.overlayUnits[id]['winPosX'];
       var winPosY = this.overlayUnits[id]['winPosY'];
       if (winPosX !== this.util.offsetX() || winPosY !== this.util.offsetY()) {
         isMove = true;
         
+      }
+      if (this.util.wheight() < this.util.wwidth()) {
+        var target = this.util.byId(id);
+        this.util.setOpacity(target, 0);
+        clearTimeout(this.moveWatcher);
+        this.moveWatcher = null;
+
+        this.moveWatcher = setTimeout(function () {
+          window['adingoFluct'].move(id);
+        }, 100);
+        return;
       }
       if (isMove) {
         this.util.setOpacity(this.util.byId(id), 0);
@@ -1155,14 +1184,13 @@ if (typeof (window['adingoFluct']) === 'undefined') {
             clearTimeout(this.effectWatcher);
             this.effectWatcher = null;
           } else {
-            this.moveWatcher = setTimeout(function () {
-              window['adingoFluct'].move(id);
-            }, 100);
-            return;
-//            clearTimeout(this.effectWatcher);
-//            this.effectWatcher = null;
-//            this.effectExecute = false;
-            
+//            this.moveWatcher = setTimeout(function () {
+//              window['adingoFluct'].move(id);
+//            }, 100);
+//            return;
+            clearTimeout(this.effectWatcher);
+            this.effectWatcher = null;
+            this.effectExecute = false;
           }
 //        } else {
 //          var target = this.util.byId(id);

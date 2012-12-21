@@ -107,23 +107,18 @@ AdingoFluctCommon.prototype = {
      */
     lZoom : function (baseWidth) {
       if (modedoc.style.zoom !== '') {
+        return baseWidth * modedoc.style.zoom;
+      }
+      else {
         if (this.dwidth() < baseWidth) {
-          if (this.wwidth() <= baseWidth) {
-            return this.dwidth() / baseWidth;
-          } else {
-            return this.dwidth() / this.wwidth();
+          if (this.wwidth() <= this.dwidth()) {
+            return (this.wwidth() / baseWidth);
           }
-        } else {
-          if (this.wwidth() < baseWidth) {
-            return this.wwidth() / baseWidth;
-          } else {
-            return this.wwidth() / this.dwidth();
+          else {
+            return this.dwidth() / baseWidth;
           }
         }
-      } else {
-        if (this.wwidth() < baseWidth) {
-          return (this.wwidth() / baseWidth);
-        } else {
+        else {
           return 1;
         }
       }
@@ -135,9 +130,9 @@ AdingoFluctCommon.prototype = {
      * @returns {Number} x
      */
     lposX : function (width) {
-      return ((this.offsetX() + this.wwidth() - (width * this.gZoom() * this
+      return Math.max(0, ((this.offsetX() + this.wwidth() - (width * this.gZoom() * this
           .lZoom(width))) / this.gZoom())
-          / this.lZoom(width) / 2;
+          / this.lZoom(width) / 2);
     },
     /**
      * ローカル座標系においてelementがwindowの最下部にくるyをきめる
@@ -161,15 +156,17 @@ AdingoFluctCommon.prototype = {
       var lzoom = this.lZoom(width);
       var gzoom = this.gZoom();
       var tmpy = this.offsetY();
-      var x = ((this.offsetX() + this.wwidth() - (width * gzoom * lzoom)) / gzoom)
-      / lzoom / 2;
-      var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom)
-      / lzoom;
+      var tmpx = this.offsetX();
+      var x = ((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
+      / lzoom / 2 + tmpx;
+      var y = Math.max(0, ((this.wheight() - (height * gzoom * lzoom)) / gzoom)
+      / lzoom + tmpy);
       var top = tmpy / gzoom / lzoom;
       return {
         "x" : x,
         "y" : y,
-        "top" : top
+        "top" : top,
+        "zoom": lzoom
       };
     },
 

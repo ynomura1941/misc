@@ -246,9 +246,16 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           this.util.addHandler(window.document, 'touchstart', function (e) {
             window['adingoFluct'].touchHandler(e);
           }, true);
-          this.util.addHandler(window.document, 'resize', function (e) {
-            window['adingoFluct'].resizeHandler(e);
+          this.util.addHandler(window, 'resize', function (e) {
+            window['adingoFluct'].touchHandler(e);
           }, true);
+          this.util.addHandler(window, 'orientationchange', function (e) {
+            window['adingoFluct'].touchHandler(e);
+          }, true);
+          this.util.addHandler(window.document, 'touchmove', function (e) {
+            window['adingoFluct'].touchHandler(e);
+          }, true);
+
           this.addedHandler = true;
         }
       }
@@ -299,7 +306,13 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      * @param wait
      */
     visibleOverlay : function (id, wait) {
-      this.effectExecute = false;
+      if (this.effectExecute) {
+        return;
+      }
+      if (this.util.wheight() < this.util.wwidth()) {
+        return;
+      }
+      this.effectExecute = true;
       var target = this.util.byId(id);
       target.style.display = 'block';
       var lpos = this.util.lposXY(parseInt(target.style.width, 10),
@@ -309,6 +322,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       if (this.util.offsetY() + this.util.wheight() >= this.util.dheight()) {
         y = lpos['top'] + 'px';
       }
+      target.style.zoom = lpos['zoom'];
       this.util.setOpacity(target, 0);
       target.style.top = y;
       target.style.left = x;
@@ -338,6 +352,9 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           window['adingoFluct'].show(id, effectValue);
         }, 24);
       }
+      else {
+        this.effectExecute = false;
+      }
     },
 
     /**
@@ -346,12 +363,22 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      */
     move : function (id) {
       var isMove = false;
-
       var winPosX = this.overlayUnits[id]['winPosX'];
       var winPosY = this.overlayUnits[id]['winPosY'];
       if (winPosX !== this.util.offsetX() || winPosY !== this.util.offsetY()) {
         isMove = true;
         
+      }
+      if (this.util.wheight() < this.util.wwidth()) {
+        var target = this.util.byId(id);
+        this.util.setOpacity(target, 0);
+        clearTimeout(this.moveWatcher);
+        this.moveWatcher = null;
+
+        this.moveWatcher = setTimeout(function () {
+          window['adingoFluct'].move(id);
+        }, 100);
+        return;
       }
       if (isMove) {
         this.util.setOpacity(this.util.byId(id), 0);
@@ -363,14 +390,13 @@ if (typeof (window['adingoFluct']) === 'undefined') {
             clearTimeout(this.effectWatcher);
             this.effectWatcher = null;
           } else {
-            this.moveWatcher = setTimeout(function () {
-              window['adingoFluct'].move(id);
-            }, 100);
-            return;
-//            clearTimeout(this.effectWatcher);
-//            this.effectWatcher = null;
-//            this.effectExecute = false;
-            
+//            this.moveWatcher = setTimeout(function () {
+//              window['adingoFluct'].move(id);
+//            }, 100);
+//            return;
+            clearTimeout(this.effectWatcher);
+            this.effectWatcher = null;
+            this.effectExecute = false;
           }
 //        } else {
 //          var target = this.util.byId(id);

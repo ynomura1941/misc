@@ -50,3 +50,7 @@ compile: $(CMD)
 	@echo "}());" >> $(JSBASE).all$(MODE)
 	@rm -f $(JSBASE)$(MODE)
 
+all:
+	$(MAKE) compile CMD=merge SRC=$(SRC)
+	$(MAKE) compile CMD=fcc SRC=$(SRC)
+	$(MAKE) compile CMD=afcc SRC=$(SRC)
