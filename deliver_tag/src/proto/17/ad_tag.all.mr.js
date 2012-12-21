@@ -167,7 +167,8 @@ AdingoFluctCommon.prototype = {
         y = top;
       }
       if( this.isAndroid() && window.outerHeight/window.devicePixelRatio > tmpy){
-        y = window.outerHeight/window.devicePixelRatio - ((( (height * gzoom * lzoom)) / gzoom) / lzoom);
+        y = ((window.outerHeight/window.devicePixelRatio - height) * gzoom * lzoom) / gzoom
+        / lzoom;
       }
       
       
