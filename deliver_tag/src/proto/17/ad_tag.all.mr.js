@@ -723,6 +723,13 @@ AdingoFluctCommon.prototype = {
       } else if (typeof(target.detachEvent) !== 'undefined') {
         target.detachEvent('on' + name, func);
       }
+    },
+    
+    isLandscape: function () {
+      if (this.wheight() < this.wwidth()) {
+        return true;
+      }
+      return false;
     }
   };
 
@@ -1060,7 +1067,6 @@ if (typeof (window['adingoFluct']) === 'undefined') {
      * @param e
      */
     touchHandler: function (e) {
-      console.log(e);
       if (e.srcElement.offsetParent === null || typeof(e.srcElement.offsetParent) === 'undefined' || typeof(e.srcElement.offsetParent.className) === 'undefined' || e.srcElement.offsetParent.className !== 'adingoFluctOverlay') {
         if (this.effectWatcher !== null) {
           if (this.effectExecute === false) {
@@ -1101,7 +1107,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       if (this.effectExecute) {
         return;
       }
-      if (this.util.wheight() < this.util.wwidth()) {
+      if (this.util.isLandscape()) {
         return;
       }
       this.effectExecute = true;
@@ -1111,7 +1117,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           parseInt(target.style.height, 10));
       var x = Math.max(0, lpos['x']) + 'px';
       var y = lpos['y'] + 'px';
-      if (this.util.offsetY() > 0 && this.util.offsetY() + this.util.wheight() >= this.util.dheight()) {
+      if (this.util.offsetY() > 0 && this.util.offsetY() + this.util.wheight() >= this.util.dheight() - 4) {
         y = lpos['top'] + 'px';
       }
       target.style.zoom = lpos['zoom'];
@@ -1170,7 +1176,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
         isMove = true;
         
       }
-      if (this.util.wheight() < this.util.wwidth()) {
+      if (this.util.isLandscape()) {
         var target = this.util.byId(id);
         this.util.setOpacity(target, 0);
         clearTimeout(this.moveWatcher);

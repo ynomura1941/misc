@@ -722,5 +722,12 @@ AdingoFluctCommon.prototype = {
       } else if (typeof(target.detachEvent) !== 'undefined') {
         target.detachEvent('on' + name, func);
       }
+    },
+    
+    isLandscape: function () {
+      if (this.wheight() < this.wwidth()) {
+        return true;
+      }
+      return false;
     }
   };
