@@ -118,8 +118,16 @@ AdingoFluctCommon.prototype = {
             return this.dwidth() / baseWidth;
           }
         }
-        else {
+        else if (this.wwidth() === this.dwidth()) {
           return 1;
+        }
+        else {
+          if (this.wwidth() >= baseWidth) {
+            return 1;
+          }
+          else {
+            return this.wwidth() / baseWidth;
+          }
         }
       }
     },
@@ -132,7 +140,7 @@ AdingoFluctCommon.prototype = {
     lposX : function (width) {
       var lz = this.lZoom(width);
       var gz = this.gZoom();
-      return ((this.offsetX() + this.wwidth() - (width * gz * lz)) / gz) / lz / 2;
+      return this.offsetX() + (((this.wwidth() - (width * gz * lz)) / gz) / lz / 2);
     },
     /**
      * ローカル座標系においてelementがwindowの最下部にくるyをきめる
@@ -157,8 +165,8 @@ AdingoFluctCommon.prototype = {
       var gzoom = this.gZoom();
       var tmpy = Math.max(0, this.offsetY());
       var tmpx = this.offsetX();
-      var x = ((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
-      / lzoom / 2 + tmpx;
+      var x = (((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
+      / lzoom / 2) + (tmpx / gzoom / lzoom);
       var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom) / lzoom;
       var top = tmpy / gzoom / lzoom;
       if (tmpy > 0 && tmpy + this.wheight() >= this.dheight() - 4) {

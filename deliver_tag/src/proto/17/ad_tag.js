@@ -386,22 +386,11 @@ if (typeof (window['adingoFluct']) === 'undefined') {
         this.overlayUnits[id]['winPosY'] = this.util.offsetY();
         this.overlayUnits[id]['winH']    = this.util.wheight();
         if (this.effectWatcher !== null) {
-          if (this.effectExecute === false) {
-            clearTimeout(this.effectWatcher);
-            this.effectWatcher = null;
-          } else {
-//            this.moveWatcher = setTimeout(function () {
-//              window['adingoFluct'].move(id);
-//            }, 100);
-//            return;
-            clearTimeout(this.effectWatcher);
-            this.effectWatcher = null;
+          clearTimeout(this.effectWatcher);
+          this.effectWatcher = null;
+          if (this.effectExecute !== false) {
             this.effectExecute = false;
           }
-//        } else {
-//          var target = this.util.byId(id);
-//          this.util.setOpacity(target, 0);
-//        }
         }
         this.visibleOverlay(id, 500);
       }
