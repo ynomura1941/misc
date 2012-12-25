@@ -246,14 +246,6 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           this.util.addHandler(window, 'resize', function (e) {
             window['adingoFluct'].touchHandler(e);
           }, true);
-          /*
-          this.util.addHandler(window, 'orientationchange', function (e) {
-            window['adingoFluct'].touchHandler(e);
-          }, true);
-          this.util.addHandler(window.document, 'touchmove', function (e) {
-            window['adingoFluct'].touchHandler(e);
-          }, true);
-          */
           this.moveWatcher = setTimeout(function () {
             window['adingoFluct'].move(insertAdId);
           }, 100);
@@ -308,6 +300,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       this.overlayUnits[id] = {};
       this.overlayUnits[id]['winPosX'] = this.util.offsetX();
       this.overlayUnits[id]['winPosY'] = this.util.offsetY();
+      this.overlayUnits[id]['winH']    = this.util.wheight();
       if (this.effectExecute) {
         return;
       }
@@ -328,9 +321,6 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       target.style.top = y;
       target.style.left = x;
       target = null;
-      this.overlayUnits[id] = {};
-      this.overlayUnits[id]['winPosX'] = this.util.offsetX();
-      this.overlayUnits[id]['winPosY'] = this.util.offsetY();
       this.effectWatcher = setTimeout(function () {
         window['adingoFluct'].show(id, 0);
       }, wait);
@@ -374,7 +364,8 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       }
       var winPosX = this.overlayUnits[id]['winPosX'];
       var winPosY = this.overlayUnits[id]['winPosY'];
-      if (winPosX !== this.util.offsetX() || winPosY !== this.util.offsetY()) {
+      var winH    = this.overlayUnits[id]['winH'];
+      if (winPosX !== this.util.offsetX() || winPosY !== this.util.offsetY() || winH !== this.util.wheight()) {
         isMove = true;
         
       }
@@ -393,7 +384,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
         this.util.setOpacity(this.util.byId(id), 0);
         this.overlayUnits[id]['winPosX'] = this.util.offsetX();
         this.overlayUnits[id]['winPosY'] = this.util.offsetY();
-
+        this.overlayUnits[id]['winH']    = this.util.wheight();
         if (this.effectWatcher !== null) {
           if (this.effectExecute === false) {
             clearTimeout(this.effectWatcher);

@@ -130,9 +130,9 @@ AdingoFluctCommon.prototype = {
      * @returns {Number} x
      */
     lposX : function (width) {
-      return ((this.offsetX() + this.wwidth() - (width * this.gZoom() * this
-          .lZoom(width))) / this.gZoom())
-          / this.lZoom(width) / 2;
+      var lz = this.lZoom(width);
+      var gz = this.gZoom();
+      return ((this.offsetX() + this.wwidth() - (width * gz * lz)) / gz) / lz / 2;
     },
     /**
      * ローカル座標系においてelementがwindowの最下部にくるyをきめる
@@ -141,9 +141,9 @@ AdingoFluctCommon.prototype = {
      * @returns {Number} y
      */
     lposY : function (height, width) {
-      return ((this.offsetY() + this.wheight() - (height * this.gZoom() * this
-          .lZoom(width))) / this.gZoom())
-          / this.lZoom(width);
+      var lz = this.lZoom(width);
+      var gz = this.gZoom();
+      return (this.offsetY() +  this.wheight() - (height * gz* lz)) / gz / lz;
     },
 
     /**
@@ -159,18 +159,11 @@ AdingoFluctCommon.prototype = {
       var tmpx = this.offsetX();
       var x = ((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
       / lzoom / 2 + tmpx;
-      var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom)
-      / lzoom;
+      var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom) / lzoom;
       var top = tmpy / gzoom / lzoom;
       if (tmpy > 0 && tmpy + this.wheight() >= this.dheight() - 4) {
         y = top;
       }
-      if( this.isAndroid() && window.outerHeight/window.devicePixelRatio > tmpy){
-        y = ((window.outerHeight/window.devicePixelRatio - height) * gzoom * lzoom) / gzoom
-        / lzoom;
-      }
-      
-      
       return {
         "x" : x,
         "y" : y,

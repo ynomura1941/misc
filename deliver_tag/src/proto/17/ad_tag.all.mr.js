@@ -131,9 +131,9 @@ AdingoFluctCommon.prototype = {
      * @returns {Number} x
      */
     lposX : function (width) {
-      return ((this.offsetX() + this.wwidth() - (width * this.gZoom() * this
-          .lZoom(width))) / this.gZoom())
-          / this.lZoom(width) / 2;
+      var lz = this.lZoom(width);
+      var gz = this.gZoom();
+      return ((this.offsetX() + this.wwidth() - (width * gz * lz)) / gz) / lz / 2;
     },
     /**
      * ローカル座標系においてelementがwindowの最下部にくるyをきめる
@@ -142,9 +142,9 @@ AdingoFluctCommon.prototype = {
      * @returns {Number} y
      */
     lposY : function (height, width) {
-      return ((this.offsetY() + this.wheight() - (height * this.gZoom() * this
-          .lZoom(width))) / this.gZoom())
-          / this.lZoom(width);
+      var lz = this.lZoom(width);
+      var gz = this.gZoom();
+      return (this.offsetY() +  this.wheight() - (height * gz* lz)) / gz / lz;
     },
 
     /**
@@ -160,18 +160,11 @@ AdingoFluctCommon.prototype = {
       var tmpx = this.offsetX();
       var x = ((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
       / lzoom / 2 + tmpx;
-      var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom)
-      / lzoom;
+      var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom) / lzoom;
       var top = tmpy / gzoom / lzoom;
       if (tmpy > 0 && tmpy + this.wheight() >= this.dheight() - 4) {
         y = top;
       }
-      if( this.isAndroid() && window.outerHeight/window.devicePixelRatio > tmpy){
-        y = ((window.outerHeight/window.devicePixelRatio - height) * gzoom * lzoom) / gzoom
-        / lzoom;
-      }
-      
-      
       return {
         "x" : x,
         "y" : y,
@@ -1054,14 +1047,6 @@ if (typeof (window['adingoFluct']) === 'undefined') {
           this.util.addHandler(window, 'resize', function (e) {
             window['adingoFluct'].touchHandler(e);
           }, true);
-          /*
-          this.util.addHandler(window, 'orientationchange', function (e) {
-            window['adingoFluct'].touchHandler(e);
-          }, true);
-          this.util.addHandler(window.document, 'touchmove', function (e) {
-            window['adingoFluct'].touchHandler(e);
-          }, true);
-          */
           this.moveWatcher = setTimeout(function () {
             window['adingoFluct'].move(insertAdId);
           }, 100);
@@ -1116,6 +1101,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       this.overlayUnits[id] = {};
       this.overlayUnits[id]['winPosX'] = this.util.offsetX();
       this.overlayUnits[id]['winPosY'] = this.util.offsetY();
+      this.overlayUnits[id]['winH']    = this.util.wheight();
       if (this.effectExecute) {
         return;
       }
@@ -1136,9 +1122,6 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       target.style.top = y;
       target.style.left = x;
       target = null;
-      this.overlayUnits[id] = {};
-      this.overlayUnits[id]['winPosX'] = this.util.offsetX();
-      this.overlayUnits[id]['winPosY'] = this.util.offsetY();
       this.effectWatcher = setTimeout(function () {
         window['adingoFluct'].show(id, 0);
       }, wait);
@@ -1182,7 +1165,8 @@ if (typeof (window['adingoFluct']) === 'undefined') {
       }
       var winPosX = this.overlayUnits[id]['winPosX'];
       var winPosY = this.overlayUnits[id]['winPosY'];
-      if (winPosX !== this.util.offsetX() || winPosY !== this.util.offsetY()) {
+      var winH    = this.overlayUnits[id]['winH'];
+      if (winPosX !== this.util.offsetX() || winPosY !== this.util.offsetY() || winH !== this.util.wheight()) {
         isMove = true;
         
       }
@@ -1201,7 +1185,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
         this.util.setOpacity(this.util.byId(id), 0);
         this.overlayUnits[id]['winPosX'] = this.util.offsetX();
         this.overlayUnits[id]['winPosY'] = this.util.offsetY();
-
+        this.overlayUnits[id]['winH']    = this.util.wheight();
         if (this.effectWatcher !== null) {
           if (this.effectExecute === false) {
             clearTimeout(this.effectWatcher);
