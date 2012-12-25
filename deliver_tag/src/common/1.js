@@ -143,7 +143,7 @@ AdingoFluctCommon.prototype = {
     lposY : function (height, width) {
       var lz = this.lZoom(width);
       var gz = this.gZoom();
-      return (this.offsetY() +  this.wheight() - (height * gz* lz)) / gz / lz;
+      return (this.offsetY() +  this.wheight() - (height * gz * lz)) / gz / lz;
     },
 
     /**
@@ -155,7 +155,7 @@ AdingoFluctCommon.prototype = {
     lposXY : function (width, height) {
       var lzoom = this.lZoom(width);
       var gzoom = this.gZoom();
-      var tmpy = Math.max( 0, this.offsetY());
+      var tmpy = Math.max(0, this.offsetY());
       var tmpx = this.offsetX();
       var x = ((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
       / lzoom / 2 + tmpx;
@@ -732,7 +732,7 @@ AdingoFluctCommon.prototype = {
       return false;
     },
     
-    isAndroid: function(){
+    isAndroid: function () {
       return navigator.userAgent.toLowerCase().indexOf('android', 0) >= 0 ? true : false;
     }
   };
