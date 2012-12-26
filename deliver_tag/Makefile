@@ -1,6 +1,6 @@
+.PHONY: release
 RUBY_CMD=`which ruby`
 JUICER_HOME=.
-.PHONY=: release
 
 
 AFCC=.afcc.js
@@ -21,10 +21,16 @@ ifeq (fcc,$(CMD))
 MODE=$(FCC)
 endif
 
-JSBASE = $(patsubst %.js,%,$(SRC))
-
-DEST_FILE_DIR = $(subst $(SRCDIR),$(DESTDIR),$(dir $(SRC)))
+SRC_FILENAME = ad_tag.js
 RELEASE_FILENAME = fluct_tag.js
+
+SRC ?= $(SRCDIR)/$(KIND)/$(VER)/$(SRC_FILENAME)
+
+
+
+JSBASE = $(patsubst %.js,%,$(SRC))
+DEST_FILE_DIR = $(subst $(SRCDIR),$(DESTDIR),$(dir $(SRC)))
+
 
 install:
 	bundle install --path vendor --binstubs
@@ -66,6 +72,11 @@ $(DEST_FILE_DIR):
 	@echo $(DEST_FILE_DIR)
 	@echo $(RELEASE_FILENAME)
 	test -d $(DEST_FILE_DIR) || mkdir -p $(DEST_FILE_DIR)
+
 dest: $(DEST_FILE_DIR)
 	cp $(SRC) $(DEST_FILE_DIR)$(RELEASE_FILENAME)
 
+release: 
+	$(MAKE) all SRC=$(SRC)
+	$(MAKE) dest SRC=$(JSBASE).all$(AFCC)
+	
