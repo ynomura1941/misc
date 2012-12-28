@@ -833,7 +833,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
     this.refreshUnits = {}; //{groupId => unit_data}
     this.addedHandler = false;
   };
-  AdingoFluct.URL = 'http://y-nomura.sh.adingo.jp.dev.fluct.me/api/json/v1/?';
+  AdingoFluct.URL = 'http://sh.adingo.jp/api/json/v1/?';
   AdingoFluct.LOAD_NONE = 0;
   AdingoFluct.LOADING = 1;
   AdingoFluct.LOADED = 2;
