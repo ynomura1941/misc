@@ -9,6 +9,11 @@ MR=.mr.js
 
 SRCDIR=src
 DESTDIR=release
+S3CONF=s3.conf
+TAGDIR=deliver_tag
+BACKET=fluct-sandbox
+S3HEADER=--add-header=Expires:"$(shell LANG='' TZ=GMT date --date='1 years' +'%a, %d %m %Y %H:%I:%S GMT')"
+CDN=y-nomura.img.fluct.jp.dev.fluct.me
 
 
 ifeq (merge,$(CMD))
@@ -80,3 +85,13 @@ release:
 	$(MAKE) all SRC=$(SRC)
 	$(MAKE) dest SRC=$(JSBASE).all$(AFCC)
 	
+
+s3:
+	s3cmd -c $(S3CONF) --acl-public $(S3HEADER) put release/$(KIND)/$(VER)/fluct_tag.js s3://$(BACKET)/$(TAGDIR)/$(KIND)/$(VER)/fluct_tag.js
+
+cdn: s3
+	@if [ $(shell curl -s -o /dev/null -I -w "%{http_code}" http://$(CDN)/$(TAGDIR)/$(KIND)/$(VER)/fluct_tag.js) -ne 200 ]; then \
+		echo "error cache generate in cdn"; \
+		exit 1; \
+	fi
+
