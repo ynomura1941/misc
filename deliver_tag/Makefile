@@ -90,7 +90,7 @@ s3:
 	@if [ ! -f release/$(KIND)/$(VER)/fluct_tag.js ]; then \
 		exit -1; \
 	fi 
-	s3cmd -c $(S3CONF) --acl-public $(S3HEADER) put release/$(KIND)/$(VER)/fluct_tag.js s3://$(BACKET)/$(TAGDIR)/$(KIND)/$(VER)/fluct_tag.js
+	s3cmd -c $(S3CONF) $(S3HEADER) put release/$(KIND)/$(VER)/fluct_tag.js s3://$(BACKET)/$(TAGDIR)/$(KIND)/$(VER)/fluct_tag.js
 
 cdn: s3
 	@if [ $(shell curl -s -o /dev/null -I -w "%{http_code}" http://$(CDN)/$(TAGDIR)/$(KIND)/$(VER)/fluct_tag.js) -ne 200 ]; then \
