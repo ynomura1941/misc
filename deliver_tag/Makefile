@@ -31,9 +31,7 @@ RELEASE_FILENAME = fluct_tag.js
 
 SRC ?= $(SRCDIR)/$(KIND)/$(VER)/$(SRC_FILENAME)
 
-
-
-JSBASE = $(patsubst %.js,%,$(SRC))
+JSBASE = $(basename $(SRC))
 DEST_FILE_DIR = $(subst $(SRCDIR),$(DESTDIR),$(dir $(SRC)))
 
 
