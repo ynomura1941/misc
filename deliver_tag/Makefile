@@ -96,3 +96,15 @@ cdn: s3
 		exit -1; \
 	fi
 
+deploy: s3dir
+	@for str in `ls release/$(KIND)/$(VER)/*.js`; \
+	do \
+		filename=`basename $$str` ; \
+		rtn=`curl -s -o /dev/null -I -w "%{http_code}"  http://$(CDN)/$(TAGDIR)/$(KIND)/$(VER)/$$filename` ; \
+		if [ $$rtn -ne 200 ]; then \
+			exit -1; \
+		fi ; \
+	done
+s3dir:
+	s3cmd --recursive -c $(S3CONF) $(S3HEADER) put release/$(KIND)/$(VER)/ s3://$(BACKET)/$(TAGDIR)/$(KIND)/$(VER)/
+
