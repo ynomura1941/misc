@@ -84,7 +84,7 @@ if (typeof (window['adingoFluct']) === 'undefined') {
             var unit_id = temp_queue.shift();
             var selfUrl = s_group_data['tag'].src;
             var url = selfUrl.match(/(.+)\/[^\/]+\.js\?.+/)[1];
-            this.util.addSnycTag(url + '/cookie_sync.js?' + this.util.toQuery(json['syncs']));
+            this.util.addSnycTag(url + '/../../cookie_sync.js?' + this.util.toQuery(json['syncs']));
             this.showAd(unit_id);
             this.synced = true;
           }
