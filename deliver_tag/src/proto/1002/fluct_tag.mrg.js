@@ -952,8 +952,8 @@ if (typeof (window['adingoFluct']) === 'undefined') {
             && temp_group_info['load_status'] === AdingoFluct.LOADED) {
           for (var i = 0; i < temp_group_info['json']['num']; i += 1) {
             var temp_ad = temp_group_info['json']['ads'][i];
-            if (String(temp_ad['unit_id']) === unit_id) {
-              target_ad = [ group_id, temp_ad ];
+            if (String(temp_ad['unit_id']) === String(unit_id)) {
+              target_ad = new Array(group_id, temp_ad);
               break;
             }
           }
@@ -1019,7 +1019,8 @@ if (typeof (window['adingoFluct']) === 'undefined') {
         }
       }
       this.util.unit_beacon(unit_div_id, adinfo);
-      if (this.util.hv(adinfo, 'reload') === 1) {
+      if (this.util.hv(adinfo, 'reload') === 1 || true) {
+      // すべてリロードする
         this.refreshUnits[gid] = adinfo;
         this.reloadInvoke(gid, adinfo['unit_id']);
       }
