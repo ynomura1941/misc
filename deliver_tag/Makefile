@@ -11,7 +11,8 @@ SRCDIR=src
 DESTDIR=release
 S3CONF=s3.conf
 TAGDIR=deliver_tag
-BACKET=fluct-sandbox
+#BACKET=fluct-sandbox
+BACKET=img.fluct.jp.dev.fluct.me
 S3HEADER=--add-header=Expires:"$(shell LANG='' TZ=GMT date --date='1 years' +'%a, %d %m %Y %H:%I:%S GMT')"
 CDN=y-nomura.img.fluct.jp.dev.fluct.me
 
