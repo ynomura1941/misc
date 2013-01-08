@@ -2,8 +2,8 @@
 
 /*global window AdingoFluctCommon AdingoFluctSync*/
 /**
- * @depends ../../common/1.js
- * @depends ../../cookie_sync/1.js
+ * @depends ../../common/cookie_sync_include.js
+ * @depends ../../common/util.js
  */
 if (typeof (window['adingoFluct']) === 'undefined') {
   /**

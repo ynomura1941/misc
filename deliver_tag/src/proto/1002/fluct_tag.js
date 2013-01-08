@@ -2,7 +2,7 @@
 
 /*global window AdingoFluctCommon AdingoFluctSync*/
 /**
- * @depends ../../common/1.js
+ * @depends ../../common/util.js
  */
 if (typeof (window['adingoFluct']) === 'undefined') {
   /**
