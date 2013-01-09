@@ -165,17 +165,20 @@ AdingoFluctCommon.prototype = {
       var gzoom = this.gZoom();
       var tmpy = Math.max(0, this.offsetY());
       var tmpx = this.offsetX();
+      var bottom = false;
       var x = (((this.wwidth() - (width * gzoom * lzoom)) / gzoom)
       / lzoom / 2) + (tmpx / gzoom / lzoom);
       var y = ((tmpy + this.wheight() - (height * gzoom * lzoom)) / gzoom) / lzoom;
       var top = tmpy / gzoom / lzoom;
       if (tmpy > 0 && tmpy + this.wheight() >= this.dheight() - 4) {
         y = top;
+        bottom = true;
       }
       return {
         "x" : x,
         "y" : y,
-        "zoom": lzoom
+        "zoom": lzoom,
+        "bottom": bottom
       };
     },
 
@@ -651,12 +654,16 @@ AdingoFluctCommon.prototype = {
      * @param ad
      * @returns
      */
-    overlay : function (ad) {
-      var div = this.byId('adingoFluctUnit_' + ad['unit_id']);
+    overlay : function (parentId, id, ad) {
+      if (this.byId(id) !== null) {
+        return id;
+      }
+      var div = this.byId(parentId);
+      
       var over = this.create_element('div');
       var h = ad['height'] + 'px';
       var w = ad['width'] + 'px';
-      over.setAttribute('id', 'adingoFluctOverlay_' + ad['unit_id']);
+      over.setAttribute('id', id);
       over.setAttribute('class', 'adingoFluctOverlay');
       over
       .setAttribute(
@@ -669,7 +676,7 @@ AdingoFluctCommon.prototype = {
       div.appendChild(over);
       div = null;
       over = null;
-      return 'adingoFluctOverlay_' + ad['unit_id'];
+      return id;
     },
 
     /**
@@ -677,17 +684,10 @@ AdingoFluctCommon.prototype = {
      * 
      * @param unit_id
      */
-    clearDiv : function (unit_id) {
-      var unit_div = this.byId('adingoFluctUnit_' + unit_id);
-      var overlay_div = this.byId('adingoFluctOverlay_' + unit_id);
-      if (overlay_div === null) {
-        while (unit_div.firstChild) {
-          unit_div.removeChild(unit_div.firstChild);
-        }
-      } else {
-        while (overlay_div.firstChild) {
-          overlay_div.removeChild(overlay_div.firstChild);
-        }
+    clearDiv : function (elmId) {
+      var target = this.byId(elmId);
+      while (target.firstChild !== null) {
+        target.removeChild(target.firstChild);
       }
     },
 
